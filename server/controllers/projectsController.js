@@ -211,95 +211,85 @@ exports.getProjectById = async (req, res) => {
 };
 
 // Get a team member's role in a project by user _id and project teamMembers _id
-exports.getUserByProjectId = (req, res) => {
-  const projectId = req.params.projectId;
-  const teamMemberId = req.params.teamMemberId;
+exports.getUserByProjectId = async (req, res) => {
+  const { projectId, teamMemberId } = req.params;
 
-  Project.findById(projectId)
-    .populate('teamMembers._id', '-password') // Exclude the 'password' field
-    .then(project => {
-      if (project) {
-        const teamMember = project.teamMembers.find(member => member._id._id.toString() === teamMemberId);
-        if (teamMember) {
-          const { _id, firstName, lastName, gender, email, phone, organization, department, jobTitle, createdDate, updatedDate } = teamMember._id;
-          const role = teamMember.role;
+  try {
+    const project = await Project.findById(projectId).populate('teamMembers._id', '-password');
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
 
-          // Get the role details
-          Role.findOne({ name: role })
-            .populate('permissions', 'name')
-            .then(role => {
-              if (role) {
-                //const permissions = role.permissions.map(permission => permission.name);
-                res.status(200).json({
-                  _id: _id.toString(),
-                  firstName,
-                  lastName,
-                  gender,
-                  email,
-                  phone,
-                  organization,
-                  department,
-                  jobTitle,
-                  createdDate: createdDate.toISOString(),
-                  updatedDate: updatedDate.toISOString(),
-                  role,
-                  //permissions
-                });
-              } else {
-                res.status(500).json({ error: 'Failed to fetch role details' });
-              }
-            })
-            .catch(error => {
-              res.status(500).json({ error: 'Failed to fetch role details' });
-            });
-        } else {
-          res.status(404).json({ error: 'Team member not found in the project' });
-        }
-      } else {
-        res.status(404).json({ error: 'Project not found' });
+    const teamMember = project.teamMembers.find(member => member._id._id.toString() === teamMemberId);
+    if (!teamMember) {
+      return res.status(404).json({ error: 'Team member not found in the project' });
+    }
+
+    const user = teamMember._id;
+    const roleName = teamMember.role;
+
+    let permissions = [];
+    if (roleName) {
+      const roleDoc = await Role.findOne({ name: roleName }).populate('permissions', 'name');
+      if (roleDoc?.permissions) {
+        permissions = roleDoc.permissions.map(permission => permission.name);
       }
-    })
-    .catch(error => {
-      res.status(500).json({ error: 'Failed to fetch project' });
+    }
+
+    res.status(200).json({
+      _id: user._id.toString(),
+      firstName: user.firstName,
+      lastName: user.lastName,
+      gender: user.gender,
+      email: user.email,
+      phone: user.phone,
+      organization: user.organization,
+      department: user.department,
+      jobTitle: user.jobTitle,
+      createdDate: user.createdDate ? user.createdDate.toISOString() : null,
+      updatedDate: user.updatedDate ? user.updatedDate.toISOString() : null,
+      role: roleName,
+      permissions,
     });
+  } catch (error) {
+    console.error('Error fetching user by project:', error);
+    res.status(500).json({ error: 'Failed to fetch project team member' });
+  }
 };
 
 // Get users by project ID
-exports.getUsersByProjectId = (req, res) => {
-  const projectId = req.params.projectId;
+exports.getUsersByProjectId = async (req, res) => {
+  const { projectId } = req.params;
 
-  Project.findById(projectId)
-    .populate('teamMembers._id', '-password') // Exclude the 'password' field
-    .then(project => {
-      if (project) {
-        const users = project.teamMembers.map(member => {
-          const { _id, firstName, lastName, gender, email, phone, organization, department, jobTitle, createdDate, updatedDate } = member._id;
-          const role = member.role;
+  try {
+    const project = await Project.findById(projectId).populate('teamMembers._id', '-password');
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
 
-          return {
-            _id: _id.toString(),
-            firstName,
-            lastName,
-            gender,
-            email,
-            phone,
-            organization,
-            department,
-            jobTitle,
-            createdDate: createdDate.toISOString(),
-            updatedDate: updatedDate.toISOString(),
-            role
-          };
-        });
-
-        res.status(200).json(users);
-      } else {
-        res.status(404).json({ error: 'Project not found' });
-      }
-    })
-    .catch(error => {
-      res.status(500).json({ error: 'Failed to fetch project' });
+    const users = project.teamMembers.map(member => {
+      const user = member._id;
+      return {
+        _id: user._id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        gender: user.gender,
+        email: user.email,
+        phone: user.phone,
+        organization: user.organization,
+        department: user.department,
+        jobTitle: user.jobTitle,
+        createdDate: user.createdDate ? user.createdDate.toISOString() : null,
+        updatedDate: user.updatedDate ? user.updatedDate.toISOString() : null,
+        role: member.role,
+      };
     });
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.error('Error fetching users by project:', error);
+    res.status(500).json({ error: 'Failed to fetch project' });
+  }
 };
 
 // Get task count by project and status (admin)
