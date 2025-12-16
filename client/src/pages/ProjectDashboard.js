@@ -87,7 +87,7 @@ const ProjectDashboard = () => {
   };
 
   const onConfirmDelete = (projectId) => {
-    confirmDelete(projectId, setProjects);
+    confirmDelete(projectId, setProjects, () => {});
   };
 
   if (isLoading) {
