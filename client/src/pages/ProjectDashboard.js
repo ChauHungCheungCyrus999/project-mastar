@@ -36,7 +36,7 @@ const ProjectDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Create
-  const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isCreateFormOpen, setCreateFormOpen] = useState(false);
 
   // Redirect if user is not logged in
   useEffect(() => {
@@ -70,12 +70,7 @@ const ProjectDashboard = () => {
   };
 
   const handleCreateProject = () => {
-    setDialogOpen(true);
-  };
-
-  const handleCloseCreateDialog = (event, reason) => {
-    if (reason && reason === 'backdropClick') return;
-    setDialogOpen(false);
+    setCreateFormOpen(true);
   };
 
   const onCreate = async (newProject, setProjects) => {
@@ -104,7 +99,12 @@ const ProjectDashboard = () => {
     <div>
       <CssBaseline />
 
-      <CreateProjectBtn setProjects={setProjects} mode="fab" />
+      <CreateProjectBtn 
+        setProjects={setProjects} 
+        mode="fab" 
+        isCreateFormOpen={isCreateFormOpen}
+        setCreateFormOpen={setCreateFormOpen}
+      />
 
       <Box display="flex" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
         <Box id="user-greeting">

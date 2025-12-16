@@ -9,30 +9,35 @@ import ProjectCreateForm from './ProjectCreateForm';
 
 import { useTranslation } from 'react-i18next';
 
-const CreateProjectBtn = ({ setProjects, setFilteredProjects, mode }) => {
+const CreateProjectBtn = ({ setProjects, setFilteredProjects, mode, isCreateFormOpen, setCreateFormOpen }) => {
   const { t } = useTranslation();
 
-  const [isCreateFormOpen, setCreateFormOpen] = useState(false);
+  // Use internal state if not controlled from parent
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = isCreateFormOpen !== undefined ? isCreateFormOpen : internalIsOpen;
+  const setIsOpen = setCreateFormOpen || setInternalIsOpen;
   
   // Create
   const handleAddProject = async (newProject) => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/project`, newProject);
       setProjects((prevProjects) => [...prevProjects, response.data]);
-      setFilteredProjects((prevProjects) => [...prevProjects, response.data]);
+      if (setFilteredProjects) {
+        setFilteredProjects((prevProjects) => [...prevProjects, response.data]);
+      }
     } catch (error) {
       console.error('Error adding project:', error);
     }
   };
 
   const handleOpenCreateForm = () => {
-    setCreateFormOpen(true);
+    setIsOpen(true);
   };
 
   const handleCloseCreateForm = (event, reason) => {
     if (reason && reason === "backdropClick")
       return;
-    setCreateFormOpen(false);
+    setIsOpen(false);
   };
 
   return (
@@ -52,7 +57,7 @@ const CreateProjectBtn = ({ setProjects, setFilteredProjects, mode }) => {
       )}
       
       <ProjectCreateForm
-        open={isCreateFormOpen}
+        open={isOpen}
         handleClose={handleCloseCreateForm}
         handleAddProject={handleAddProject}
       />
