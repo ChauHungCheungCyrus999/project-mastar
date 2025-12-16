@@ -1,0 +1,115 @@
+@keyframes flip {
+  0%       { transform: rotate3d( 0.5, 0.866, 0,  90deg); 
+             opacity: 0;}
+  0.1%     { transform: rotate3d( 0.5, 0.866, 0,  90deg); 
+             opacity: 1;}
+ 14%       { transform: rotate3d( 0.5, 0.866, 0,   0deg); }
+ 50%       { transform: rotate3d(-0.5, 0.866, 0,   0deg); }
+ 63.99%    { transform: rotate3d(-0.5, 0.866, 0, -90deg); 
+             opacity: 1;}
+ 64%, 100% { transform: rotate3d(-0.5, 0.866, 0, -90deg); 
+             opacity: 0}
+}
+
+.folding-hex {
+  height: 69.28px;
+  width: 80px;
+  position: relative;
+  margin: 0 auto;
+  transform-origin: 0 0;
+  transform: translateX(40px) rotate(30deg);
+}
+
+.rotator {
+  transform-origin: 20px 37.64px;
+}
+.rotator:nth-child(1) {
+  transform: rotate(0deg); 
+}
+.rotator:nth-child(2) {
+  transform: rotate(60deg); 
+}
+.rotator:nth-child(3) {
+  transform: rotate(120deg); 
+}
+.rotator:nth-child(4) {
+  transform: rotate(180deg); 
+}
+.rotator:nth-child(5) {
+  transform: rotate(240deg); 
+}
+.rotator:nth-child(6) {
+  transform: rotate(300deg); 
+}
+ 
+.triangle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 34.64px 20px 0;
+  transform-origin: 20px 37.64px;
+  border-color: #1d1970 transparent;
+  animation: flip 3s linear infinite;
+}
+
+.rotator:nth-child(2) .triangle {
+  border-color: #334bad transparent;
+  animation-delay: -2.5s;
+}
+.rotator:nth-child(3) .triangle {
+  border-color: #194a70 transparent;
+  animation-delay: -2.0s;
+}
+.rotator:nth-child(4) .triangle {
+  animation-delay: -1.5s;
+}
+
+.rotator:nth-child(5) .triangle {
+  border-color: #8c79f8 transparent; 
+  animation-delay: -1.0s;
+}
+.rotator:nth-child(6) .triangle {
+  border-color: #a379f8 transparent; 
+  animation-delay: -0.5s;
+}
+
+/*.triangle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 34.64px 20px 0;
+  transform-origin: 20px 37.64px;
+  border-color: #1d1970 transparent;
+  animation: flip 3s linear infinite;
+}
+
+.triangle:after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #1d1970;
+}
+
+.rotator:nth-child(2) .triangle:before {
+  background-color: #334bad;
+}
+.rotator:nth-child(3) .triangle:before {
+  background-color: #194a70;
+}
+.rotator:nth-child(4) .triangle:before {
+  background-color: #1d1970;
+}
+.rotator:nth-child(5) .triangle:before {
+  background-color: #8c79f8;
+}
+.rotator:nth-child(6) .triangle:before {
+  background-color: #a379f8;
+}*/
+

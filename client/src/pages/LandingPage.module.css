@@ -1,0 +1,83 @@
+/*.description-container {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.description-container.fade-in {
+  opacity: 1;
+}*/
+
+
+/* Chameleon background (Reference: https://frontendin.com/css-animated-backgrounds/) */
+.landing-page-body {
+  animation: theme 21s linear infinite;
+}
+
+.landing-page-body::after,
+.landing-page-body::before {
+  content: '';
+  display: block;
+  position: fixed;
+  z-index: -1;
+  top: 0;
+  width: 100vw; /* IE/Edge */
+  height: 100vh; /* fallback */
+  width: 100vmax;
+  height: 100vmax;
+  background: rgba(0, 0, 0, 0.05);
+  animation: background 90s linear infinite;
+}
+
+.landing-page-body::after {
+  left: 15vw;
+}
+
+.landing-page-body::before {
+  right: 15vw;
+  animation-delay: -30s;
+  animation-direction: reverse;
+}
+
+@keyframes theme {
+  0% {
+    background: #e0c2ff;
+  }
+
+  16% {
+    background: #c2cfff;
+  }
+
+  33% {
+    background: #51BCE8;
+  }
+
+  50% {
+    background: #59D4E1;
+  }
+
+  66% {
+    background: #ffcc00;
+  }
+
+  83% {
+    background: #E46653;
+  }
+
+  90% {
+    background: #FA5374;
+  }
+
+  100% {
+    background: #e0c2ff;
+  }
+}
+
+@keyframes background {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}

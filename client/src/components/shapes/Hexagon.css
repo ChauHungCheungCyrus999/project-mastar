@@ -1,0 +1,93 @@
+.container {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  width: 600px;
+  gap: 10px;
+  transform: rotate(90deg);
+}
+
+.container .card {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  overflow: hidden;
+  margin: 0 -75px;
+  clip-path: polygon(50% 100%, 0 0, 100% 0);
+}
+
+.container .card:nth-child(1),
+.container .card:nth-child(2),
+.container .card:nth-child(3) {
+  display: none;
+}
+
+.container .card:nth-child(2),
+.container .card:nth-child(4),
+.container .card:nth-child(6),
+.container .card:nth-child(8) {
+  clip-path: polygon(50% 0, 0 100%, 100% 100%);
+}
+
+.container img {
+  transition: 0.5s;
+  max-height: 300px;
+  max-width: 300px;
+  min-width: 300px;
+  min-height: 300px;
+  /*object-fit: none;*/
+  transform: rotate(-90deg);
+}
+
+.container .card:hover img {
+  filter: blur(4px);
+  transform: scale(1.5) rotate(-90deg);
+  filter: brightness(0.5);    /* Dark background when hover */
+}
+
+.container .overlay {
+  position: absolute;
+  top: 60%;
+  left: 45%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+
+  transform-origin:0 0;
+  transform: rotate(-90deg);
+}
+
+/* Schedule */
+.card:nth-child(4) .overlay {
+  top: 75%;
+}
+/* Resource */
+.card:nth-child(5) .overlay {
+  top: 50%;
+}
+/* Budget */
+.card:nth-child(6) .overlay {
+  top: 75%;
+}
+/* Quality */
+.card:nth-child(7) .overlay {
+  top: 50%;
+}
+/* Scope */
+.card:nth-child(8) .overlay {
+  top: 70%;
+}
+/* Risk */
+.card:nth-child(9) .overlay {
+  top: 40%;
+}
+
+.container .card:hover .overlay {
+  opacity: 1;
+}

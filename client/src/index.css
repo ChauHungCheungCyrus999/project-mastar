@@ -1,0 +1,73 @@
+/* scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+ background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #bec4c4;
+  border-radius: 25px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+
+body, html, *[class^='Mui'] {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+
+/* Print */
+@media print {
+  body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none;
+  }
+
+  .print-container {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure grid items don't get cropped */
+  .MuiGrid-item {
+    width: 100% !important;
+    page-break-inside: avoid;
+  }
+
+  /* Adjust typography and card styles for better fit */
+  .MuiTypography-root, .MuiCardContent-root {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .MuiCard-root {
+    break-inside: avoid;
+    margin-bottom: 10px;
+  }
+}

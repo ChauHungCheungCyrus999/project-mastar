@@ -1,0 +1,102 @@
+export function initProjects() {
+  const projects = [
+    {
+      _id: "657c52b9c0beea14c87a81ac",
+      title: 'Sanfield TEAM',
+      description: '<p><strong>HRMS</strong></p>',
+      teamMembers: [
+        { _id: '65edbf9c5f5fc38e6b0aec80', role: 'Project Manager' },
+        { _id: '65f55a9bf14fff03ba585f3b', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3c', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3d', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3e', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3f', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f40', role: 'Team Member' },
+        { _id: '65f55d4af14fff03ba585f41', role: 'Team Member' },
+        { _id: '65f55d4af14fff03ba585f42', role: 'Team Member' }
+      ],
+      color: '#ff0000',
+      createdBy:"65edbf9c5f5fc38e6b0aec80",
+      createdDate: '2023-11-22',
+      updatedBy:"65edbf9c5f5fc38e6b0aec80",
+      updatedDate: '2023-11-23',
+    },
+    {
+      _id: 2,
+      title: 'Project 2',
+      description: '<ul>\n  Mobile App Development<li>Add a delete function in the admin portal</li>\n  <li><strong>Add a create function in the admin portal</strong></li>\n  <li><u><em>Add a edit function in the admin portal</em></u></li>\n</ul><ul>\n  <li>Add a delete function in the admin portal</li>\n  <li><strong>Add a create function in the admin portal</strong></li>\n  <li><u><em>Add a edit function in the admin portal</em></u></li>\n</ul><ul>\n  <li>Add a delete function in the admin portal</li>\n  <li><strong>Add a create function in the admin portal</strong></li>\n  <li><u><em>Add a edit function in the admin portal</em></u></li>\n</ul><ul>\n  <li>Add a delete function in the admin portal</li>\n  <li><strong>Add a create function in the admin portal</strong></li>\n  <li><u><em>Add a edit function in the admin portal</em></u></li>\n</ul>',
+      teamMembers: [
+        { _id: '65edbf9c5f5fc38e6b0aec80', role: 'Project Manager' },
+        { _id: '65f55a9bf14fff03ba585f3b', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3c', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3d', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3e', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f3f', role: 'Team Member' },
+        { _id: '65f55a9bf14fff03ba585f40', role: 'Team Member' },
+        { _id: '65f55d4af14fff03ba585f41', role: 'Team Member' },
+        { _id: '65f55d4af14fff03ba585f42', role: 'Team Member' }
+      ],
+      color: '#ffa500',
+      createdDate: '2024-11-22',
+      updatedDate: '2024-11-23',
+    },
+    {
+      _id: 3,
+      title: 'Project 3',
+      description: 'A veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryvery long message',
+      color: '#ffff00',
+      createdDate: '2023-11-22',
+      updatedDate: '2023-11-23',
+    },
+    {
+      _id: 4,
+      title: 'Project 4',
+      description: 'A very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very very long message',
+      color: '#008000',
+      createdDate: '2024-11-22',
+      updatedDate: '2024-11-23',
+    },
+    {
+      _id: 5,
+      title: 'Project 5',
+      description: 'Backend Development',
+      color: '#0000ff',
+      createdDate: '2024-02-05',
+      updatedDate: '2024-02-06',
+    },
+    {
+      _id: 6,
+      title: 'Project 6',
+      description: 'Database Management',
+      color: '#800080',
+      createdDate: '2024-02-06',
+      updatedDate: '2024-02-07',
+    },
+    {
+      _id: 7,
+      title: 'Project 7',
+      description: 'Machine Learning',
+      color: '#5300EB',
+      createdDate: '2024-02-07',
+      updatedDate: '2024-02-07',
+    },
+    {
+      _id: 8,
+      title: 'Project 8',
+      description: 'Project Management',
+      color: '#888',
+      createdDate: '2024-02-07',
+      updatedDate: '2024-02-07',
+    },
+    {
+      _id: 9,
+      title: 'Long Long Long Project Name',
+      description: 'Research and Development',
+      color: 'transparent',
+      createdDate: '2024-02-07',
+      updatedDate: '2024-02-07',
+    },
+  ];
+
+  return projects;
+}
