@@ -26,25 +26,23 @@ dotenv.config();
 const app = express();
 
 
-// Set up storage for multer
+// Set up storage for multer (修正: 防止檔案覆蓋，確保唯一檔名)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     let uploadPath = '';
-    uploadPath = path.join(__dirname, 'uploads', req.body.folder);
+    uploadPath = path.join(__dirname, 'uploads', req.body.folder || 'tasks'); // 預設為 tasks
+    // 確保目錄存在
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    const seconds = date.getSeconds().toString().padStart(2, '0');
-    
-    const formattedDate = `${year}${month}${day}_${hours}${minutes}${seconds}`;
-    
-    cb(null, `${formattedDate}_${decodeURI(file.originalname)}`);
+    // 使用毫秒級時間戳+隨機數，確保唯一
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    const name = path.basename(file.originalname, ext);
+    cb(null, `${uniqueSuffix}-${decodeURI(name)}${ext}`);
   },
 });
 
