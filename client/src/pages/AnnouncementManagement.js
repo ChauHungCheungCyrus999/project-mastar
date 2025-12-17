@@ -579,10 +579,10 @@ const AnnouncementManagement = () => {
               projectId={selectedAnnouncement.project || ''}
               displayAllOption={true}
               onChange={(projectId) => {
-                setSelectedAnnouncement({
-                  ...selectedAnnouncement,
+                setSelectedAnnouncement((prev) => ({
+                  ...prev,
                   project: (projectId === '' || projectId === "undefined") ? null : projectId
-                });
+                }));
               }}
             />
           )}
