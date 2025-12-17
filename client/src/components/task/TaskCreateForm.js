@@ -120,9 +120,9 @@ const TaskCreateForm = ({ projectId, open, handleClose, handleAddTask, dateMode,
     const newTask = {
       taskName,
       category,
-      tags: tags.filter(tag => tag && tag._id), // Filter out invalid tags
+      tags: tags.filter(tag => tag && tag._id),
       description,
-      personInCharge: personInCharge.filter(person => person && person._id), // Filter out invalid persons
+      personInCharge: personInCharge.filter(person => person && person._id),
       status,
       priority,
       difficultyLevel,
@@ -134,7 +134,7 @@ const TaskCreateForm = ({ projectId, open, handleClose, handleAddTask, dateMode,
       updatedBy: user._id,
       createdDate,
       updatedDate,
-      attachments,
+      attachments, // attachments are now {name, path} objects from server upload
       subtasks,
       color,
       project: projectId,
@@ -237,34 +237,23 @@ const TaskCreateForm = ({ projectId, open, handleClose, handleAddTask, dateMode,
     return false;
   };
 
-  // Drag-and-drop attachments
-  const handleDrop = (droppedFile) => {
-    // Handle dropped files
-    setAttachments((prevFiles) => [...prevFiles, droppedFile]);
-  };
-
-  // Paste Images for Upload from clipboard
+  // Paste Images for Upload from clipboard (using File/FormData instead of base64)
   const handlePaste = (event) => {
     const items = event.clipboardData.items;
-    const pastedFiles = [];
     const formattedDate = formatFileNameDate();
   
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       if (item.kind === 'file' && item.type.includes('image')) {
-        const file = {
-          name: `screenshot_${formattedDate}`,
-          base64: null,
-        };
-        const reader = new FileReader();
-        reader.onload = () => {
-          const base64File = reader.result;
-          file.base64 = base64File;
-          //console.log('pastedFile = ' + JSON.stringify(file));
-          pastedFiles.push(file);
-          handleDrop(file);
-        };
-        reader.readAsDataURL(item.getAsFile());
+        const file = item.getAsFile();
+        const extension = file.type.split('/')[1] || 'png';
+        const fileName = `screenshot_${formattedDate}.${extension}`;
+        
+        // Create a new File object with the custom name
+        const renamedFile = new File([file], fileName, { type: file.type });
+        
+        // Add to attachments
+        setAttachments((prevFiles) => prevFiles ? [...prevFiles, renamedFile] : [renamedFile]);
       }
     }
   };

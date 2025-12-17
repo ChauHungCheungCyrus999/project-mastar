@@ -14,8 +14,7 @@ const TeamMemberSelector = ({ label, personInCharge = [], setPersonInCharge, dis
     const fetchTeamMembers = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/project/${projectId}`);
-        const teamMembers = response.data.teamMembers.map(member => member._id);
-        setOptions(teamMembers);
+        setOptions(response.data.teamMembers);
 
         // Initialize selectedValues based on personInCharge
         if (personInCharge.length > 0) {

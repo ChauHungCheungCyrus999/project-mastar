@@ -34,91 +34,151 @@ const AttachmentList = ({
   const [fileToDeleteIndex, setFileToDeleteIndex] = useState(null);
 
   // Drag-and-drop attachments
-  const handleDrop = (acceptedFiles) => {
+  const handleDrop = async (acceptedFiles) => {
     const formData = new FormData();
-    formData.append('folder', folder); // Specify the folder where files should be uploaded dynamically
+    formData.append('folder', folder);
 
     acceptedFiles.forEach((file) => {
       formData.append('files', file, encodeURIComponent(file.name));
     });
 
-    axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-      .then((response) => {
-        const uploadedFiles = response.data.files;
-        let updatedObject = {
-          ...editedObject,
-          attachments: [...(editedObject.attachments || [])],
-        };
-        let newAttachments = [];
-        uploadedFiles.forEach((file) => {
-          // Save the object with the new attachments
-          newAttachments = uploadedFiles?.map((file) => ({
-            ...file
-          }));
-        });
-
-        // Set object.attachments when upload attachment
-        setAttachments((prevFiles) => (prevFiles ? [...prevFiles, ...newAttachments] : newAttachments));
-                
-        updatedObject = {
-          ...editedObject,
-          attachments: [...(editedObject?.attachments || []), ...newAttachments],
-        };
-
-        console.log("updatedObject = " + JSON.stringify(updatedObject));
-        setEditedObject(updatedObject);
-        handleSave(updatedObject);
-        alertRef.current.displayAlert('success', t('uploadSuccess'));
-      })
-      .catch((error) => {
-        console.error('File upload error:', error);
-        alertRef.current.displayAlert('error', t('uploadFail'));
-      });
-  };
-
-  const handleDelete = (event, index) => {
-    event.stopPropagation(); // Prevent unintended event bubbling
-    setOpenConfirmDialog(true);
-    setFileToDeleteIndex(index);
-  };
-  
-  const confirmDelete = async () => {
-    // Get the file to delete using the saved index
-    const fileToDelete = files[fileToDeleteIndex];
-  
     try {
-      // Make an API request to delete the file
-      await axios.delete(`${process.env.REACT_APP_SERVER_HOST}/api/delete-file`, {
-        data: { path: fileToDelete.path }, // Ensure the correct path is sent
+      const response = await axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-  
-      // Update the files state to remove the deleted file
-      const updatedFiles = files.filter((_, i) => i !== fileToDeleteIndex);
-      setFiles(updatedFiles); // Update the `files` state
-  
-      // Update the `editedObject` to reflect the changes
+
+      const uploadedFiles = response.data.files;
+      const newAttachments = uploadedFiles?.map((file) => ({
+        ...file
+      }));
+
+      // First, fetch the latest data from the server to get current attachments
+      let currentAttachments = [];
+      
+      if (editedObject?._id) {
+        try {
+          // Determine the API endpoint based on the folder type
+          let apiEndpoint = '';
+          if (folder === 'tasks') {
+            apiEndpoint = `${process.env.REACT_APP_SERVER_HOST}/api/task/${editedObject._id}`;
+          } else if (folder === 'events') {
+            apiEndpoint = `${process.env.REACT_APP_SERVER_HOST}/api/event/${editedObject._id}`;
+          } else if (folder === 'announcements') {
+            apiEndpoint = `${process.env.REACT_APP_SERVER_HOST}/api/announcement/${editedObject._id}`;
+          }
+          
+          if (apiEndpoint) {
+            const latestDataResponse = await axios.get(apiEndpoint);
+            currentAttachments = latestDataResponse.data?.attachments || [];
+          }
+        } catch (fetchError) {
+          console.warn('Could not fetch latest data, using local state:', fetchError);
+          currentAttachments = editedObject?.attachments || [];
+        }
+      } else {
+        currentAttachments = editedObject?.attachments || [];
+      }
+
+      // Merge new attachments with the current ones from server
+      const mergedAttachments = [...currentAttachments, ...newAttachments];
+
+      // Update local states
+      setAttachments(mergedAttachments);
+      setFiles && setFiles(mergedAttachments);
+
+      const updatedObject = {
+        ...editedObject,
+        attachments: mergedAttachments,
+      };
+
+      setEditedObject(updatedObject);
+      
+      // Save with merged attachments
+      await handleSave(updatedObject);
+
+      alertRef.current.displayAlert('success', t('uploadSuccess'));
+    } catch (error) {
+      console.error('File upload error:', error);
+      alertRef.current.displayAlert('error', t('uploadFail'));
+    }
+  };
+
+  // Delete attachment
+  const handleDelete = async (event, index) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setFileToDeleteIndex(index);
+    setOpenConfirmDialog(true);
+  };
+
+  const confirmDeleteAttachment = async () => {
+    const fileToDelete = files[fileToDeleteIndex];
+    
+    try {
+      // Delete file from server if it has a path
+      if (fileToDelete.path) {
+        await axios.delete(`${process.env.REACT_APP_SERVER_HOST}/api/delete-file`, {
+          data: { path: fileToDelete.path }
+        });
+      }
+
+      // Fetch the latest data from the server
+      let currentAttachments = [];
+      
+      if (editedObject?._id) {
+        try {
+          let apiEndpoint = '';
+          if (folder === 'tasks') {
+            apiEndpoint = `${process.env.REACT_APP_SERVER_HOST}/api/task/${editedObject._id}`;
+          } else if (folder === 'events') {
+            apiEndpoint = `${process.env.REACT_APP_SERVER_HOST}/api/event/${editedObject._id}`;
+          } else if (folder === 'announcements') {
+            apiEndpoint = `${process.env.REACT_APP_SERVER_HOST}/api/announcement/${editedObject._id}`;
+          }
+          
+          if (apiEndpoint) {
+            const latestDataResponse = await axios.get(apiEndpoint);
+            currentAttachments = latestDataResponse.data?.attachments || [];
+          }
+        } catch (fetchError) {
+          console.warn('Could not fetch latest data, using local state:', fetchError);
+          currentAttachments = files || [];
+        }
+      } else {
+        currentAttachments = files || [];
+      }
+
+      // Remove the deleted file from current attachments
+      const updatedFiles = currentAttachments.filter((att) => 
+        att.path !== fileToDelete.path && att.name !== fileToDelete.name
+      );
+
       const updatedObject = {
         ...editedObject,
         attachments: updatedFiles,
       };
-      setAttachments(updatedFiles); // Update attachments state
+
+      setAttachments(updatedFiles);
+      setFiles && setFiles(updatedFiles);
       setEditedObject(updatedObject);
-      handleSave(updatedObject); // Save the updated object
+      
+      await handleSave(updatedObject);
   
-      // Show success alert
       alertRef.current.displayAlert('success', t('deleteSuccess'));
     } catch (error) {
       console.error('File deletion error:', error);
       alertRef.current.displayAlert('error', t('deleteFail'));
     } finally {
-      // Close the confirmation dialog
       setOpenConfirmDialog(false);
       setFileToDeleteIndex(null);
     }
+  };
+
+  const cancelDeleteAttachment = () => {
+    setOpenConfirmDialog(false);
+    setFileToDeleteIndex(null);
   };
 
   const handleDownload = (attachment) => {
@@ -224,8 +284,8 @@ const AttachmentList = ({
         title={t('deleteAttachment')}
         content={t('confirmDeleteAttachment')}
         open={openConfirmDialog}
-        onCancel={() => setOpenConfirmDialog(false)}
-        onConfirm={confirmDelete}
+        onConfirm={confirmDeleteAttachment}
+        onCancel={cancelDeleteAttachment}
       />
 
       <CAlert ref={alertRef} />
