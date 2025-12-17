@@ -168,7 +168,22 @@ const AnnouncementManagement = () => {
 
   // Function to handle preview dialog open
   const handleOpenPreviewDialog = (announcement) => {
-    setPreviewAnnouncement(announcement);
+    const previewData = {
+      ...announcement,
+      createdBy: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        organization: user.organization,
+        department: user.department,
+        jobTitle: user.jobTitle
+      },
+      project: project && announcement.project === project._id ? project : null,
+      startDate: announcement.startDate || new Date()
+    };
+    setPreviewAnnouncement(previewData);
     setOpenPreviewDialog(true);
   };
 
