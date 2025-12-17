@@ -26,18 +26,20 @@ function Navbar({ displayMenu }) {
     setOpen(newOpen);
   };
 
+  // Fix: Accurate scroll positioning for navbar anchor links
+  // Computes target position using getBoundingClientRect to avoid double smooth-scroll conflicts
   const scrollToSection = (sectionId) => {
     const sectionElement = document.getElementById(sectionId);
-    const offset = 128;
-    if (sectionElement) {
-      const targetScroll = sectionElement.offsetTop - offset;
-      sectionElement.scrollIntoView({ behavior: 'smooth' });
-      window.scrollTo({
-        top: targetScroll,
-        behavior: 'smooth',
-      });
-      setOpen(false);
-    }
+    if (!sectionElement) return;
+
+    const appBar = document.querySelector('header.MuiAppBar-root');
+    const headerHeight = appBar?.getBoundingClientRect().height || 64;
+    const extraGap = 8; // Small breathing space below the AppBar
+
+    const targetY = sectionElement.getBoundingClientRect().top + window.pageYOffset - (headerHeight + extraGap);
+
+    window.scrollTo({ top: targetY, behavior: 'smooth' });
+    setOpen(false);
   };
 
   return (

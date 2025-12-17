@@ -115,7 +115,7 @@ exports.getAllTasks = async (req, res) => {
   try {
     // Find all tasks and populate the required fields
     const tasks = await Task.find()
-      .populate('personInCharge') // Populate the personInCharge field with user data
+      .populate('personInCharge', 'firstName lastName email phone organization department jobTitle') // Populate the personInCharge field with user data
       .populate('milestone')
       .populate('tags')
       .populate('createdBy', 'firstName lastName') // Populate the createdBy field with user data
@@ -136,7 +136,7 @@ exports.getTaskById = async (req, res) => {
   try {
     // Find the task by ID and populate the required fields
     const task = await Task.findById(taskId)
-      .populate('personInCharge') // Populate the personInCharge field with user data
+      .populate('personInCharge', 'firstName lastName email phone organization department jobTitle') // Populate the personInCharge field with user data
       .populate('milestone')
       .populate('tags')
       .populate('createdBy', 'firstName lastName email') // Populate the createdBy field with user data
@@ -232,7 +232,7 @@ exports.getTasksByProjectIdAndStatus = async (req, res) => {
 
     // Find tasks by project ID and correct status
     const tasks = await Task.find({ project: projectId, status: formattedStatus })
-      .populate('personInCharge', 'firstName lastName email')
+      .populate('personInCharge', 'firstName lastName email phone organization department jobTitle')
       .populate('milestone')
       .populate('tags')
       .populate('createdBy', 'firstName lastName')
@@ -306,7 +306,7 @@ exports.getTasksGroupByMilestone = async (req, res) => {
         // Find active tasks for each milestone
         const tasks = await Task.find({ milestone: milestone._id, status: { $ne: 'Cancelled' } })
           .populate('tags')
-          .populate('personInCharge', 'firstName lastName')
+          .populate('personInCharge', 'firstName lastName email phone organization department jobTitle')
           .populate('createdBy', 'firstName lastName')
           .populate('updatedBy', 'firstName lastName');
 
@@ -380,7 +380,7 @@ exports.getUserUpcomingTasks = async (req, res) => {
         .sort({ endDate: 1 })
         .populate('milestone')
         .populate('tags')
-        .populate('personInCharge')
+        .populate('personInCharge', 'firstName lastName email phone organization department jobTitle')
         .populate('createdBy', 'firstName lastName')
         .populate('updatedBy', 'firstName lastName')
         .populate('project')
@@ -402,7 +402,7 @@ exports.getUserUpcomingTasks = async (req, res) => {
         .sort({ endDate: 1 })
         .populate('milestone')
         .populate('tags')
-        .populate('personInCharge')
+        .populate('personInCharge', 'firstName lastName email phone organization department jobTitle')
         .populate('createdBy', 'firstName lastName')
         .populate('updatedBy', 'firstName lastName')
         .populate({
@@ -449,7 +449,7 @@ exports.getUserOverdueTasks = async (req, res) => {
         .sort({ endDate: 1 })
         .populate('milestone')
         .populate('tags')
-        .populate('personInCharge')
+        .populate('personInCharge', 'firstName lastName email phone organization department jobTitle')
         .populate('createdBy', 'firstName lastName')
         .populate('updatedBy', 'firstName lastName')
         .populate('project')
@@ -471,7 +471,7 @@ exports.getUserOverdueTasks = async (req, res) => {
         .sort({ endDate: 1 })
         .populate('milestone')
         .populate('tags')
-        .populate('personInCharge')
+        .populate('personInCharge', 'firstName lastName email phone organization department jobTitle')
         .populate('createdBy', 'firstName lastName')
         .populate('updatedBy', 'firstName lastName')
         .populate({

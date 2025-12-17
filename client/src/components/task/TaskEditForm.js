@@ -340,36 +340,54 @@ const TaskEditForm = ({ taskId, mode, open, handleClose, handleSave, handleDupli
 
     formData.append('files', file, encodeURIComponent(fileName));
 
-    axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/upload`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-      .then((response) => {
-        const uploadedFiles = response.data.files;
-        uploadedFiles.forEach((file) => {
-          // Save the task with the new attachments
-          const newAttachments = uploadedFiles?.map((file) => ({
-            ...file
-          }));
-
-          setAttachments((prevFiles) => (prevFiles ? [...prevFiles, ...newAttachments] : newAttachments));
-          
-          const updatedTask = {
-            ...editedTask,
-            attachments: [...(editedTask.attachments || []), ...newAttachments],
-          };
-          
-          console.log("updatedTask = " + JSON.stringify(updatedTask));
-          setEditedTask(updatedTask);
-          handleSave(updatedTask);
-          alertRef.current.displayAlert('success', t('uploadSuccess'));
-        });
-      })
-      .catch((error) => {
-        console.error('File upload error:', error);
-        alertRef.current.displayAlert('error', t('deleteFail'));
+    try {
+      const response = await axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
+
+      const uploadedFiles = response.data.files;
+      const newAttachments = uploadedFiles?.map((f) => ({
+        ...f
+      }));
+
+      // Fetch the latest task data from the server to get current attachments
+      let currentAttachments = [];
+      
+      if (editedTask?._id) {
+        try {
+          const latestTaskResponse = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/task/${editedTask._id}`);
+          currentAttachments = latestTaskResponse.data?.attachments || [];
+        } catch (fetchError) {
+          console.warn('Could not fetch latest task data, using local state:', fetchError);
+          currentAttachments = editedTask?.attachments || [];
+        }
+      } else {
+        currentAttachments = editedTask?.attachments || [];
+      }
+
+      // Merge new attachments with current ones from server
+      const mergedAttachments = [...currentAttachments, ...newAttachments];
+
+      // Update local states
+      setAttachments(mergedAttachments);
+
+      const updatedTask = {
+        ...editedTask,
+        attachments: mergedAttachments,
+      };
+
+      setEditedTask(updatedTask);
+      
+      // Save with merged attachments
+      await handleSave(updatedTask);
+
+      alertRef.current.displayAlert('success', t('uploadSuccess'));
+    } catch (error) {
+      console.error('File upload error:', error);
+      alertRef.current.displayAlert('error', t('uploadFail'));
+    }
   }
 
   // Delete Task
