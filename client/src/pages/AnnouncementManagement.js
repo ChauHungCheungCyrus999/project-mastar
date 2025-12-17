@@ -419,8 +419,8 @@ const AnnouncementManagement = () => {
         startDate,
         endDate,
         attachments,
-        visibleTo: projectId !== 'undefined' ? personInCharge : personInCharge?.map(person => person._id),
-        project: projectId !== 'undefined' ? projectId : ''
+        visibleTo: selectedAnnouncement.project ? personInCharge?.map(person => person._id) : personInCharge,
+        project: selectedAnnouncement.project || null
       });
       handleCloseDialog();
     } else {
