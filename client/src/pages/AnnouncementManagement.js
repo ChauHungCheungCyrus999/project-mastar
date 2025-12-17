@@ -429,8 +429,8 @@ const AnnouncementManagement = () => {
         startDate,
         endDate,
         attachments,
-        visibleTo: personInCharge,
-        project: projectId
+        visibleTo: personInCharge?.map(person => person._id),
+        project: selectedAnnouncement.project || null
       });
     }
   };

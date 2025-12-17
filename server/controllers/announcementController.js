@@ -189,8 +189,8 @@ exports.updateAnnouncement = async (req, res) => {
     const announcement = await Announcement.findByIdAndUpdate(announcementId, announcementData, { new: true })
       .populate('visibleTo')
       .populate('createdBy')
-      .populate('updatedBy');
-
+      .populate('updatedBy')
+      .populate('project');
     if (announcement) {
       // Send notifications to all related users
       const notifications = announcement.visibleTo.map((userId) => ({
@@ -206,7 +206,7 @@ exports.updateAnnouncement = async (req, res) => {
           zhHK: `公告「${announcement.title}」已更新。`,
           zhCN: `公告「${announcement.title}」已更新。`,
         },
-        link: `/project/${announcement.project}/announcement/${announcement._id}`,
+        link: announcement.project ? `/project/${announcement.project._id || announcement.project}/announcement/${announcement._id}` : `/announcement/${announcement._id}`,
         read: false,
       }));
 
