@@ -30,8 +30,12 @@ export const draftToHtmlContent = (value) => {
 
 // HTML string to HTML
 export const displayHtml = (value) => {
-  if (value)
-    return ReactHtmlParser(value);
-  else
-    return "";
+  if (!value) return "";
+
+  // Keep line breaks, strip any remaining tags, and return plain text
+  const plainText = value
+    .replace(/<br\s*\/?>(\r\n)?/gi, '\n')
+    .replace(/<[^>]*>/g, '');
+
+  return plainText;
 }

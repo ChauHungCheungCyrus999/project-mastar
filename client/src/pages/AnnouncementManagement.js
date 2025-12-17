@@ -199,6 +199,15 @@ const AnnouncementManagement = () => {
     id: announcement._id, // Map `_id` to `id` for DataGrid
   }));
 
+  // Render announcement content without HTML tags; keep line breaks
+  const plainContent = (value) => {
+    if (!value) return '';
+    return value
+      .replace(/<br\s*\/?>(\r\n)?/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  };
+
   // DataGrid columns
   const columns = [
     { field: 'project',
@@ -209,7 +218,27 @@ const AnnouncementManagement = () => {
       ),
     },
     { field: 'title', headerName: t('title'), width: 200 },
-    { field: 'content', headerName: t('content'), width: 400 },
+    {
+      field: 'content',
+      headerName: t('content'),
+      width: 400,
+      valueGetter: (params) => plainContent(params.row.content),
+      renderCell: (params) => (
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: 'pre-line',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 1, // clamp to two lines
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {plainContent(params.row.content)}
+        </Typography>
+      ),
+    },
     {
       field: 'startDate',
       headerName: t('startDate'),
