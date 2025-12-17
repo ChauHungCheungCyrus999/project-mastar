@@ -329,7 +329,8 @@ const AnnouncementManagement = () => {
       alertRef.current.displayAlert('success', t('createSuccess'));
     } catch (error) {
       console.error('Error creating announcement:', error);
-      alertRef.current.displayAlert('error', t('createFail'));
+      const errorMessage = error.response?.data?.message || error.message || t('createFail');
+      alertRef.current.displayAlert('error', `Creation Unsuccessful: ${errorMessage}`);
     }
   };
 
@@ -346,7 +347,8 @@ const AnnouncementManagement = () => {
       alertRef.current.displayAlert('success', t('saveSuccess'));
     } catch (error) {
       console.error('Error updating announcement:', error);
-      alertRef.current.displayAlert('error', t('saveFail'));
+      const errorMessage = error.response?.data?.message || error.message || t('saveFail');
+      alertRef.current.displayAlert('error', `Edit Unsuccessful: ${errorMessage}`);
     }
   };
 
@@ -409,7 +411,8 @@ const AnnouncementManagement = () => {
 
   const handleSaveAnnouncement = () => {
     if (!selectedAnnouncement.title.trim()) {
-      alertRef.current.displayAlert('error', t('saveFail'));
+      const errorMsg = mode === 'create' ? t('createFail') : t('saveFail');
+      alertRef.current.displayAlert('error', errorMsg);
       return;
     }
 
