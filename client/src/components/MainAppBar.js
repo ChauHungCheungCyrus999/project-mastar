@@ -589,6 +589,9 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
               sx={{
                 color: 'primary.main',
                 bgcolor: selectedNavigationAction === 0 ? (theme === 'dark'? '#343434':'#e8f0ff') : 'transparent',
+                minWidth: 0,
+                py: 0.25,
+                '& .MuiSvgIcon-root': { marginBottom: 0 },
               }}
             />
             <BottomNavigationAction
@@ -597,6 +600,9 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
               sx={{
                 color: 'primary.main',
                 bgcolor: selectedNavigationAction === 1 ? (theme === 'dark'? '#343434':'#e8f0ff') : 'transparent',
+                minWidth: 0,
+                py: 0.25,
+                '& .MuiSvgIcon-root': { marginBottom: 0 },
               }}
             />
             <BottomNavigationAction
@@ -605,6 +611,9 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
               sx={{
                 color: 'primary.main',
                 bgcolor: selectedNavigationAction === 2 ? (theme === 'dark'? '#343434':'#e8f0ff') : 'transparent',
+                minWidth: 0,
+                py: 0.25,
+                '& .MuiSvgIcon-root': { marginBottom: 0 },
               }}
             />
             <BottomNavigationAction
@@ -613,6 +622,9 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
               sx={{
                 color: 'primary.main',
                 bgcolor: selectedNavigationAction === 3 ? (theme === 'dark'? '#343434':'#e8f0ff') : 'transparent',
+                minWidth: 0,
+                py: 0.25,
+                '& .MuiSvgIcon-root': { marginBottom: 0 },
               }}
             />
             <BottomNavigationAction
@@ -621,6 +633,9 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
               sx={{
                 color: 'primary.main',
                 bgcolor: selectedNavigationAction === 4 ? (theme === 'dark'? '#343434':'#e8f0ff') : 'transparent',
+                minWidth: 0,
+                py: 0.25,
+                '& .MuiSvgIcon-root': { marginBottom: 0 },
               }}
             />
             <BottomNavigationAction
@@ -629,6 +644,9 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
               sx={{
                 color: 'primary.main',
                 bgcolor: selectedNavigationAction === 5 ? (theme === 'dark'? '#343434':'#e8f0ff') : 'transparent',
+                minWidth: 0,
+                py: 0.25,
+                '& .MuiSvgIcon-root': { marginBottom: 0 },
               }}
             />
           </BottomNavigation>

@@ -32,7 +32,7 @@ const ProjectSettings = () => {
   const breadcrumbItems = [
     { label: 'home', href: '/', icon: <Home sx={{ mr: 0.5 }} fontSize="inherit" /> },
     { label: project?.title, icon: <Folder sx={{ mr: 0.5 }} fontSize="inherit" /> },
-    { label: 'projectSettings', icon: <Settings sx={{ mr: 0.5 }} fontSize="inherit" /> },
+    { label: 'projectSettings', icon: <Settings sx={{ mr: 0.3 }} fontSize="inherit" /> },
   ];
 
   const [currentTab, setCurrentTab] = useState(0);

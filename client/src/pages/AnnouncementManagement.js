@@ -60,6 +60,7 @@ const AnnouncementManagement = () => {
   }
 
   const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:960px)');
   
   const alertRef = useRef();
   const { user } = useContext(UserContext);
@@ -212,16 +213,18 @@ const AnnouncementManagement = () => {
   const columns = [
     { field: 'project',
       headerName: t('project'),
-      width: 200,
+      width: isMobile ? 120 : 200,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => (
         <ProjectFolder project={params.value} />
       ),
     },
-    { field: 'title', headerName: t('title'), width: 200 },
+    { field: 'title', headerName: t('title'), width: isMobile ? 150 : 200, flex: isMobile ? 0 : undefined },
     {
       field: 'content',
       headerName: t('content'),
-      width: 400,
+      width: isMobile ? 200 : isTablet ? 300 : 400,
+      flex: isMobile ? 0 : undefined,
       valueGetter: (params) => plainContent(params.row.content),
       renderCell: (params) => (
         <Typography
@@ -242,19 +245,22 @@ const AnnouncementManagement = () => {
     {
       field: 'startDate',
       headerName: t('startDate'),
-      width: 150,
+      width: isMobile ? 110 : 150,
+      flex: isMobile ? 0 : undefined,
       valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString() : null,
     },
     {
       field: 'endDate',
       headerName: t('endDate'),
-      width: 150,
+      width: isMobile ? 110 : 150,
+      flex: isMobile ? 0 : undefined,
       valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString() : null,
     },
     {
       field: 'visibleTo',
       headerName: t('visibleTo'),
-      width: 200,
+      width: isMobile ? 100 : 200,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => {
         const visibleTo = params.value || [];
         return (<AccountAvatar users={visibleTo} size="small" />);
@@ -263,32 +269,34 @@ const AnnouncementManagement = () => {
     {
       field: 'active',
       headerName: t('active'),
-      width: 100,
+      width: isMobile ? 80 : 100,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => (params.value ? t('yes') : t('no')),
     },
     {
       field: 'actions',
       type: 'actions',
       headerName: t('action'),
-      width: 150,
+      width: isMobile ? 120 : 150,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => (
-        <>
+        <Box sx={{ display: 'flex', gap: isMobile ? 0 : 0.5 }}>
           <Tooltip title={t('edit')}>
-            <IconButton onClick={() => handleEditAnnouncement(params.row)}>
-              <Edit />
+            <IconButton size={isMobile ? 'small' : 'medium'} onClick={() => handleEditAnnouncement(params.row)}>
+              <Edit fontSize={isMobile ? 'small' : 'medium'} />
             </IconButton>
           </Tooltip>
           <Tooltip title={t('delete')}>
-            <IconButton onClick={() => handleOpenDeleteConfirmation(params.row.id)}>
-              <Delete />
+            <IconButton size={isMobile ? 'small' : 'medium'} onClick={() => handleOpenDeleteConfirmation(params.row.id)}>
+              <Delete fontSize={isMobile ? 'small' : 'medium'} />
             </IconButton>
           </Tooltip>
           <Tooltip title={t('preview')}>
-            <IconButton onClick={() => handleOpenPreviewDialog(params.row)}>
-              <Preview />
+            <IconButton size={isMobile ? 'small' : 'medium'} onClick={() => handleOpenPreviewDialog(params.row)}>
+              <Preview fontSize={isMobile ? 'small' : 'medium'} />
             </IconButton>
           </Tooltip>
-        </>
+        </Box>
       ),
     },
   ];
@@ -514,22 +522,22 @@ const AnnouncementManagement = () => {
       pageTitle="announcement"
       breadcrumbItems={breadcrumbItems}
       actions={
-        <Stack direction="row">
+        <Stack direction="row" spacing={1} sx={{ width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'center' : 'flex-start' }}>
           <Button
             variant="contained"
             color="error"
             size="small"
-            sx={{ mb: 2, mr: 2 }}
+            sx={{ mb: 2, width: isMobile ? '48%' : 'auto' }}
             startIcon={<Delete />}
             onClick={handleOpenBulkDeleteConfirmation} // Bulk delete action
             disabled={selectedAnnouncementIds?.length === 0}
           >
-            {t('deleteSelected')}
+            {isMobile ? t('delete') : t('deleteSelected')}
           </Button>
           <Button
             variant="contained"
             size="small"
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, width: isMobile ? '48%' : 'auto' }}
             startIcon={<Add />}
             onClick={handleOpenDialog}
           >
@@ -539,7 +547,7 @@ const AnnouncementManagement = () => {
       }
     >
       <CssBaseline />
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper variant="outlined" sx={{ p: isMobile ? 1 : 2 }}>
         {/*<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant='subtitle2' gutterBottom>
             {t('announcementManagement')}
@@ -551,7 +559,7 @@ const AnnouncementManagement = () => {
         </div>*/}
 
         <CDataGrid
-          displayCheckbox={true}
+          displayCheckbox={!isMobile}
           displayToolbar={true}
           columns={columns}
           rows={rows}
@@ -573,6 +581,7 @@ const AnnouncementManagement = () => {
           </Typography>
         }
         maxWidth="md"
+        fullScreen={isMobile}
       >
         {user.email === process.env.REACT_APP_ADMIN_EMAIL && (
             <ProjectSelector
@@ -616,8 +625,8 @@ const AnnouncementManagement = () => {
             onChange={(e) => setSelectedAnnouncement({ ...selectedAnnouncement, content: e.target.value })}
           />*/}
 
-          <Grid container spacing={2} sx={{ mt: '0.1rem' }}>
-            <Grid item xs={6}>
+          <Grid container spacing={isMobile ? 1 : 2} sx={{ mt: '0.1rem' }}>
+            <Grid item xs={12} sm={6}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label={t('startDate')}
@@ -636,7 +645,7 @@ const AnnouncementManagement = () => {
                 />
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={6} mb={1}>
+            <Grid item xs={12} sm={6} mb={1}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label={t('endDate')}

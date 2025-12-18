@@ -93,7 +93,10 @@ exports.getAllActiveAnnouncementsByUser = async (req, res) => {
       active: true,
       startDate: { $lte: today },
       endDate: { $gte: today },
-      visibleTo: userId // Get all announcements where user is in visibleTo array (includes both project-specific and all-project announcements)
+      $or: [
+        { visibleTo: userId }, // Check if the user is in the visibleTo array
+        { visibleTo: userId, project: null } // Check if visibleTo does not include userId and project is null
+      ]
     })
       .populate('visibleTo')
       .populate('createdBy')

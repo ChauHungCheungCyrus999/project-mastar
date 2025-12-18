@@ -44,9 +44,19 @@
   cursor: pointer;
 }
 
-@media (min-width: 600px) {
-  .fc-daygrid-event {
-    font-size: 1em;
+@media (max-width: 600px) {
+  .fc .fc-toolbar {
+    gap: 5px;
+    margin-bottom: 15px;
+  }
+
+  .fc .fc-button {
+    padding: 4px 6px;
+    font-size: 0.75em;
+  }
+
+  .fc .fc-toolbar-title {
+    font-size: 1.1em;
   }
 }
 

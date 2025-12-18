@@ -341,7 +341,7 @@ const ProjectEditForm = ({ project, open, handleClose, handleSave }) => {
         open={open}
         onClose={handleClose}
         handleSubmit={handleSubmit}
-        title={`${t('editProject')} - ${project._id}`}
+        title={`${t('editProject')} - ${project.title}`}
         activeStep={activeStep}
         totalStep={2}
         handleBack={handleBack}

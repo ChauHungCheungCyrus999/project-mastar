@@ -111,9 +111,10 @@ const TaskDashboard = () => {
           <Button
             variant="contained"
             color="primary"
+            size="small"
             startIcon={<DashboardCustomize />}
             onClick={() => navigate('/dashboard-config')}
-            sx={{ mb: 1 }}
+            sx={{ mb: 1}}
           >
             {t('dashboardConfig')}
           </Button>

@@ -120,8 +120,19 @@ const ProjectDashboard = () => {
             color="primary"
             startIcon={<DashboardCustomize />}
             onClick={() => navigate('/dashboard-config')}
+            sx={{
+              display: { xs: 'inline-flex', sm: 'inline-flex' },
+              '& .MuiButton-startIcon': {
+                margin: { xs: 0, md: '0 8px' },
+              },
+              '& .MuiButton-startIcon + span': {
+                display: { xs: 'none', md: 'inline' },
+              },
+              minWidth: { xs: 'auto', md: 'auto' },
+              padding: { xs: '6px 8px', md: '6px 16px' },
+            }}
           >
-            {t('dashboardConfig')}
+            <span>{t('dashboardConfig')}</span>
           </Button>
         </Tooltip>
       </Box>
