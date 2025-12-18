@@ -22,6 +22,7 @@ const AnnouncementPage = () => {
   ];
 
   const { projectId, announcementId } = useParams();
+  const hasProject = projectId && projectId !== 'null';
 
   const [project, setProject] = useState(null);
   const [announcement, setAnnouncement] = useState(null);
@@ -30,14 +31,16 @@ const AnnouncementPage = () => {
   useEffect(() => {
     fetchProject();
     fetchAnnouncement();
-  }, []);
+  }, [projectId, announcementId]);
 
   const fetchProject = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/project/${projectId}`);
-      setProject(response.data);
-    } catch (error) {
-      console.error('Error fetching project:', error);
+    if (hasProject) {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/project/${projectId}`);
+        setProject(response.data);
+      } catch (error) {
+        console.error('Error fetching project:', error);
+      }
     }
   };
 
@@ -52,24 +55,28 @@ const AnnouncementPage = () => {
 
   // Close the AnnouncementDialog and navigate back
   const handleCloseDialog = () => {
-    navigate(`/project/${projectId}/dashboard`);
+    if (hasProject) {
+      navigate(`/project/${projectId}/dashboard`);
+    } else {
+      navigate('/announcement');
+    }
   };
 
   return (
     <div>
       <CssBaseline />
 
-      {project && (
-        <MainContent pageTitle={project.title} breadcrumbItems={breadcrumbItems}>
-          {announcement ? (
-            <AnnouncementDialog
-              open={true}
-              onClose={handleCloseDialog}
-              announcement={announcement}
-            />
-          ) : (
-            <ErrorPage title={t('announcementNotFound')} body={t('announcementNotFoundDesc')} />
-          )}
+      {announcement ? (
+        <MainContent pageTitle={project?.title || t('announcement')} breadcrumbItems={breadcrumbItems}>
+          <AnnouncementDialog
+            open={true}
+            onClose={handleCloseDialog}
+            announcement={announcement}
+          />
+        </MainContent>
+      ) : (
+        <MainContent pageTitle={t('announcement')} breadcrumbItems={breadcrumbItems}>
+          <ErrorPage title={t('announcementNotFound')} body={t('announcementNotFoundDesc')} />
         </MainContent>
       )}
     </div>

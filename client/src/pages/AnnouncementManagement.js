@@ -430,7 +430,7 @@ const AnnouncementManagement = () => {
         startDate,
         endDate,
         attachments,
-        visibleTo: selectedAnnouncement.project ? personInCharge?.map(person => person._id) : personInCharge,
+        visibleTo: personInCharge?.map(person => person._id),
         project: selectedAnnouncement.project || null
       });
       handleCloseDialog();

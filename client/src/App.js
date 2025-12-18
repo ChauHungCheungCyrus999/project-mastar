@@ -433,6 +433,7 @@ function App() {
                   <Route path="/account-settings" element={<AccountSettings />} />
                   <Route path="/announcement-management" element={<AnnouncementManagement />} />
                   <Route path="/announcement" element={<Announcement />} />
+                  <Route path="/announcement/:announcementId" element={<AnnouncementPage />} />
                   <Route path="/help" element={<Help />} />
                   <Route path="/project/:projectId/project-settings" element={<ProjectSettings />} />
                   <Route path="/project/:projectId/dashboard" element={<TaskDashboard />} />

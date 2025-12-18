@@ -25,6 +25,8 @@ exports.createAnnouncement = async (req, res) => {
 
     const announcement = await Announcement.create(announcementData);
 
+    const projectId = announcement.project && (announcement.project._id || announcement.project);
+
     // Send notifications to all related users
     const notifications = announcement.visibleTo.map((userId) => ({
       user: userId,
@@ -39,7 +41,7 @@ exports.createAnnouncement = async (req, res) => {
         zhHK: `公告「${announcement.title}」已建立。`,
         zhCN: `公告「${announcement.title}」已创建。`,
       },
-      link: `/project/${announcement.project}/announcement/${announcement._id}`,
+      link: projectId ? `/project/${projectId}/announcement/${announcement._id}` : `/announcement/${announcement._id}`,
       read: false,
     }));
 
@@ -192,6 +194,8 @@ exports.updateAnnouncement = async (req, res) => {
       .populate('updatedBy')
       .populate('project');
     if (announcement) {
+      const projectId = announcement.project && (announcement.project._id || announcement.project);
+
       // Send notifications to all related users
       const notifications = announcement.visibleTo.map((userId) => ({
         user: userId,
@@ -206,7 +210,7 @@ exports.updateAnnouncement = async (req, res) => {
           zhHK: `公告「${announcement.title}」已更新。`,
           zhCN: `公告「${announcement.title}」已更新。`,
         },
-        link: announcement.project ? `/project/${announcement.project._id || announcement.project}/announcement/${announcement._id}` : `/announcement/${announcement._id}`,
+        link: projectId ? `/project/${projectId}/announcement/${announcement._id}` : `/announcement/${announcement._id}`,
         read: false,
       }));
 
@@ -239,6 +243,8 @@ exports.deleteAnnouncement = async (req, res) => {
     const announcement = await Announcement.findByIdAndDelete(announcementId);
 
     if (announcement) {
+      const projectId = announcement.project && (announcement.project._id || announcement.project);
+
       // Send notifications to all related users
       const notifications = announcement.visibleTo.map((userId) => ({
         user: userId,
@@ -253,7 +259,7 @@ exports.deleteAnnouncement = async (req, res) => {
           zhHK: `公告「${announcement.title}」已被刪除。`,
           zhCN: `公告「${announcement.title}」已被删除。`,
         },
-        link: `/project/${announcement.project}/announcement/${announcement._id}`,
+        link: projectId ? `/project/${projectId}/announcement/${announcement._id}` : `/announcement/${announcement._id}`,
         read: false,
       }));
 
