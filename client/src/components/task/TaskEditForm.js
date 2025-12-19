@@ -408,7 +408,7 @@ const TaskEditForm = ({ taskId, mode, open, handleClose, handleSave, handleDupli
           handleSubmit={handleSubmit}
           handleDelete={confirmAndDeleteTask}
           taskId={editedTask._id}
-          title={`${(mode==="update" || mode === "share")? t('editTask') : t('duplicateTask')} - ${editedTask._id}`}
+          title={`${(mode==="update" || mode === "share")? t('editTask') : t('duplicateTask')} - ${editedTask.taskName}`}
         >
           <Grid container spacing={2}>
             <Grid item xs={12} sm={12} md={8}>

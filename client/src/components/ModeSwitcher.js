@@ -12,16 +12,16 @@ const ModeSwitcher = ({ displayMode, handleSwitchMode }) => {
   return (
     <Stack direction="row" justifyContent="space-between">
       <ButtonGroup size="small">
-        {!isMobile && (
-          <Tooltip title={t('taskBoard')} placement="top">
-            <Button
-              onClick={() => handleSwitchMode('TaskBoard')}
-              variant={displayMode === 'TaskBoard' ? 'contained' : 'outlined'}
-            >
-              <ViewModule />
-            </Button>
-          </Tooltip>
-        )}
+
+        <Tooltip title={t('taskBoard')} placement="top">
+          <Button
+            onClick={() => handleSwitchMode('TaskBoard')}
+            variant={displayMode === 'TaskBoard' ? 'contained' : 'outlined'}
+          >
+            <ViewModule />
+          </Button>
+        </Tooltip>
+
 
         <Tooltip title={t('taskList')} placement="top">
           <Button

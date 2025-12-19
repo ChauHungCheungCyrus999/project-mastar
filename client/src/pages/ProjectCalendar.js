@@ -310,6 +310,18 @@ const ProjectCalendar = () => {
     return null; // Return null if the event doesn't meet the criteria
   }).filter(event => event !== null); // Filter out null values  
 
+  const headerToolbar = isMobile 
+    ? {
+        start: 'prev,today,next',
+        center: 'title',
+        end: 'dayGridMonth,listMonth',
+      }
+    : {
+        start: 'prevYear,prev,today,next,nextYear',
+        center: 'title',
+        end: 'multiMonthYear,dayGridMonth,dayGridWeek,dayGridDay,listYear,listMonth,listWeek,listDay',
+      };
+
   const handleClose = () => {
     setDialogOpen(false);
     setSelectedEvents([]);
@@ -403,11 +415,7 @@ const ProjectCalendar = () => {
                 minute: '2-digit',
                 meridiem: false
               }}
-              headerToolbar={{
-                start: 'prevYear,prev,today,next,nextYear',
-                center: 'title',
-                end: 'multiMonthYear,dayGridMonth,dayGridWeek,dayGridDay,listYear,listMonth,listWeek,listDay',
-              }}
+              headerToolbar={headerToolbar}
               buttonText={{
                 today: t('today'),
                 year: t('year'),

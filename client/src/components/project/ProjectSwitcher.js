@@ -31,6 +31,11 @@ const ProjectSwitcher = () => {
       .catch(error => console.error('Error fetching projects:', error));
   }, []);
 
+  useEffect(() => {
+    setSelectedProject(projectId);
+    localStorage.setItem('selectedProject', projectId);
+  }, [projectId]);
+
   const handleChange = (event) => {
     const projectId = event.target.value;
     setSelectedProject(projectId);

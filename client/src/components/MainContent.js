@@ -41,8 +41,9 @@ const MainContent = ({ pageTitle, breadcrumbItems, actions, children }) => {
       
       <Box sx={{
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
+        justifyContent: isMobile ? 'flex-start' : 'space-between',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        flexDirection: isMobile ? 'column' : 'row',
       }}>
         <PageHeader title={t(pageTitle)} />
         { actions }

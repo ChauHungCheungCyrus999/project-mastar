@@ -391,6 +391,7 @@ const TaskProgress = () => {
       return {
         icon: true,
         taskName: true,
+        description: true,
         personInCharge: true
       };
     } else if (storedShowTaskDetails) {

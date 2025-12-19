@@ -223,6 +223,7 @@ const ListTableSwitcher = ({
           displayToolbar={displayToolbar}
           columnsToShow={columnsToShow}
           height={`calc(${height} + 40px)`}
+          
         />
       )}
     </Box>

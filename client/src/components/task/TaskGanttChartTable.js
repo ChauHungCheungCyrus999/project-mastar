@@ -27,6 +27,7 @@ import * as DateHolidays from 'date-holidays';
 
 import { useTranslation } from 'react-i18next';
 
+// Component for displaying tasks in a Gantt chart table with editable dates and column visibility
 const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => {
   const theme = useTheme();
   
@@ -42,7 +43,18 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
   // Holiday
   const [holidays, setHolidays] = useState([]);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Reset to first page when tasks change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [tasks]);
+
+  // Calculates the number of working days (man-days) between start and end dates, excluding weekends and holidays
   const calculateManDay = (startDate, endDate, holidays) => {
+    if (!startDate || !endDate) return 0;
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
     let manDays = 0;
@@ -59,23 +71,33 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     return manDays;
   };
 
+  // Checks if a given date is a holiday by comparing its formatted date to the holidays array
   const isHoliday = (date, holidays) => {
     const formattedDate = date.toISOString().substring(0, 10);
     return holidays.includes(formattedDate);
   };
 
+  // Fetches holidays for Hong Kong within the date range of all tasks
   useEffect(() => {
     const hd = new DateHolidays.default();
     hd.init('HK');
     
-    if (tasks) {
-      // Get the largest start date and end date from the tasks
-      let maxStartDate = new Date(tasks[0]?.startDate);
-      let maxEndDate = new Date(tasks[0]?.endDate);
+    if (tasks && tasks.length > 0) {
+      // Filter tasks with valid dates
+      const validTasks = tasks.filter(task => task.startDate && task.endDate && !isNaN(new Date(task.startDate).getTime()) && !isNaN(new Date(task.endDate).getTime()));
+      
+      if (validTasks.length === 0) {
+        setHolidays([]);
+        return;
+      }
 
-      for (let i = 1; i < tasks.length; i++) {
-        const startDate = new Date(tasks[i]?.startDate);
-        const endDate = new Date(tasks[i]?.endDate);
+      // Get the largest start date and end date from the valid tasks
+      let maxStartDate = new Date(validTasks[0].startDate);
+      let maxEndDate = new Date(validTasks[0].endDate);
+
+      for (let i = 1; i < validTasks.length; i++) {
+        const startDate = new Date(validTasks[i].startDate);
+        const endDate = new Date(validTasks[i].endDate);
 
         if (startDate > maxStartDate) {
           maxStartDate = startDate;
@@ -103,26 +125,27 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
   
       //console.log(holidays);
       setHolidays(holidays);
+    } else {
+      setHolidays([]);
     }
-  }, []);
+  }, [tasks]);
 
   // Add "Duration" and "Man-day" column
+  /*
   const tasksWithDuration = tasks
-    .filter(task => {
-      if (dateMode === 'estimated') {
-        return task.startDate && task.endDate;
-      } else {
-        return task.actualStartDate && task.actualEndDate;
-      }
-    })
     .map(task => {
+      const start = dateMode === 'estimated' ? task.startDate : task.actualStartDate;
+      const end = dateMode === 'estimated' ? task.endDate : task.actualEndDate;
       return {
         ...task,
-        duration: differenceInDays(new Date(task.endDate), new Date(task.startDate)),
-        manDay: calculateManDay(task.startDate, task.endDate, holidays)
+        duration: start && end ? differenceInDays(new Date(end), new Date(start)) : 0,
+        manDay: start && end ? calculateManDay(start, end, holidays) : 0
       };
     });
+  */
+  const tasksWithDuration = tasks;
 
+  // Updates the task's end date based on a new duration value (total days)
   const updateEndDateByDuration = (task, duration) => {
     if (isNaN(duration) || duration <= 0) {
       return task; // Return the task as it is if duration is invalid or empty
@@ -136,6 +159,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     };
   };
 
+  // Updates the task's end date based on a new man-day value (working days)
   const updateEndDateByManDay = (task, manDay) => {
     if (isNaN(manDay) || manDay <= 0) {
       return task; // Return the task as it is if manDay is invalid or empty
@@ -149,11 +173,13 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     };
   };
 
+  // Handles changes to the duration field and updates the task's end date
   const handleDurationChange = (task, duration) => {
     const updatedTask = updateEndDateByDuration(task, duration);
     onTaskDateChange(updatedTask);
   };
 
+  // Handles changes to the man-day field and updates the task's end date
   const handleManDayChange = (task, manDay) => {
     const updatedTask = updateEndDateByManDay(task, manDay);
     onTaskDateChange(updatedTask);
@@ -172,7 +198,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     "__v",
   ];
 
-  // LocalStorage
+  // Retrieves stored visible columns from localStorage
   const getStoredVisibleColumns = () => {
     const storedColumns = localStorage.getItem('visibleColumns');
     return storedColumns ? JSON.parse(storedColumns) : [];
@@ -200,6 +226,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     ];
   });
 
+  // Toggles the visibility of a column in the table
   const handleColumnToggle = (columnName) => {
     if (visibleColumns.includes(columnName)) {
       setVisibleColumns(visibleColumns.filter((col) => col !== columnName));
@@ -208,6 +235,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     }
   };
 
+  // Shows all available columns in the table
   const handleShowAll = () => {
     const columnNames = tasksWithDuration && tasksWithDuration?.length > 0 ? Object.keys(tasksWithDuration[0]) : [];
     const filteredColumnNames = columnNames.filter((columnName) => !excludedColumns.includes(columnName));
@@ -215,19 +243,23 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     storeVisibleColumns(filteredColumnNames);
   };
 
+  // Hides all columns in the table
   const handleHideAll = () => {
     setVisibleColumns([]);
     storeVisibleColumns([]);
   };
 
+  // Opens the column visibility menu
   const handleMenuOpen = (event) => {
     setAnchorel(event.currentTarget);
   };
 
+  // Closes the column visibility menu
   const handleMenuClose = () => {
     setAnchorel(null);
   };
 
+  // Checks if a column is currently visible
   const isColumnVisible = (columnName) => {
     return visibleColumns.includes(columnName);
   };
@@ -238,11 +270,13 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     localStorage.setItem('visibleColumns', JSON.stringify(columns));
   };
 
+  // Loads stored visible columns on component mount
   useEffect(() => {
     const storedColumns = getStoredVisibleColumns();
     setVisibleColumns(storedColumns);
   }, []);
 
+  // Stores visible columns whenever they change
   useEffect(() => {
     storeVisibleColumns(visibleColumns);
   }, [visibleColumns]);
@@ -251,16 +285,31 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
   const columnNames = Object.keys(tasksWithDuration?.[0] ?? {});
   const filteredColumnNames = columnNames.filter((columnName) => !excludedColumns.includes(columnName));
 
+  // Renders the table header with visible columns
   const renderTableHeader = () => {
     if (!tasksWithDuration || tasksWithDuration?.length === 0)
       return null;
-      
+
     return (
       <TableRow style={{ whiteSpace: 'nowrap' }}>
         {filteredColumnNames.map((columnName) => {
           if (isColumnVisible(columnName)) {
             return (
-              <TableCell key={columnName} sx={{ pt: 1.03, pb: 1.03 }}>
+              <TableCell
+                key={columnName}
+                sx={{
+                  pt: 2,
+                  pb: 2,
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  color: theme.palette.text.primary,
+                  backgroundColor: theme.palette.grey[100],
+                  borderBottom: `2px solid ${theme.palette.primary.main}`,
+                  position: 'sticky',
+                  top: 0,
+                  zIndex: 1
+                }}
+              >
                 {t(columnName)}
               </TableCell>
             );
@@ -313,6 +362,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     );
   }
 
+  // Renders the table rows for each task with pagination
   const renderTasks = () => {
     if (!tasksWithDuration || tasksWithDuration?.length === 0)
       return null;
@@ -333,8 +383,15 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
       }
     });
 
-    return sortedTasks.map((task, index) => (
-      <TableRow key={index} style={{ whiteSpace: 'nowrap' }} hover>
+    // Pagination logic
+    const totalTasks = sortedTasks.length;
+    const totalPages = Math.ceil(totalTasks / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentTasks = sortedTasks.slice(startIndex, endIndex);
+
+    return currentTasks.map((task, index) => (
+      <TableRow key={startIndex + index} style={{ whiteSpace: 'nowrap' }} hover>
         {filteredColumnNames.map((columnName) => {
           const value = task[columnName];
     
@@ -350,13 +407,16 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
               ) : <TableCell key={columnName}>{value}</TableCell>
             );
           }
-          else if (columnName === 'personInCharge') {
+          if (columnName === 'personInCharge') {
             return (
               <TableCell
                 key={columnName}
                 sx={{
                   borderTop: '1px solid #e6e4e4',
                   borderBottom: '1px solid #e6e4e4',
+                  maxWidth: '180px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
                 }}
               >
                 {task.personInCharge
@@ -374,6 +434,8 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                 sx={{
                   borderTop: '1px solid #e6e4e4',
                   borderBottom: '1px solid #e6e4e4',
+                  padding: '4px 8px',
+                  minWidth: '140px'
                 }}
               >
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -388,9 +450,25 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                         onTaskDateChange({ ...task, [columnName]: value });
                       }
                     }}
-                    sx={{ width: '150px' }}
+                    sx={{
+                      width: '120px',
+                      '& .MuiInputBase-root': {
+                        height: '32px',
+                        fontSize: '0.75rem'
+                      },
+                      '& .MuiInputBase-input': {
+                        padding: '4px 8px'
+                      }
+                    }}
                     slotProps={{
-                      textField: { fullWidth: true, size: 'small' },
+                      textField: {
+                        size: 'small',
+                        sx: {
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '4px'
+                          }
+                        }
+                      },
                       actionBar: { actions: ["clear", "today"] }
                     }}
                   />
@@ -405,6 +483,8 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                 sx={{
                   borderTop: '1px solid #e6e4e4',
                   borderBottom: '1px solid #e6e4e4',
+                  padding: '4px 8px',
+                  minWidth: '140px'
                 }}
               >
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -419,9 +499,25 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                         onTaskDateChange({ ...task, [columnName]: value });
                       }
                     }}*/
-                    sx={{ width: '150px' }}
+                    sx={{
+                      width: '120px',
+                      '& .MuiInputBase-root': {
+                        height: '32px',
+                        fontSize: '0.75rem'
+                      },
+                      '& .MuiInputBase-input': {
+                        padding: '4px 8px'
+                      }
+                    }}
                     slotProps={{
-                      textField: { fullWidth: true, size: 'small' },
+                      textField: {
+                        size: 'small',
+                        sx: {
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '4px'
+                          }
+                        }
+                      },
                       actionBar: { actions: ["clear", "today"] }
                     }}
                   />
@@ -470,21 +566,17 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                 />
               </TableCell>
             );
-          } /*if (columnName === 'manDay') {
+          } else {
             return (
-              <TableCell key={columnName}>
-                <TextField
-                  type="number"
-                  size="small"
-                  value={value}
-                  onChange={(event) => handleManDayChange(task, parseInt(event.target.value))}
-                  style={{ width:"80px" }}
-                />
-              </TableCell>
-            );
-          }*/ else {
-            return (
-              <TableCell key={columnName}>
+              <TableCell
+                key={columnName}
+                sx={{
+                  maxWidth: '200px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}
+              >
                 {value}
               </TableCell>
             );
@@ -496,66 +588,225 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
 
   return (
     <>
-      <div>
+      {/* Column Visibility Controls */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '16px',
+        padding: '8px 16px',
+        backgroundColor: theme.palette.background.paper,
+        borderRadius: '8px',
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+      }}>
         <Button
           size="small"
           startIcon={<ViewColumnIcon />}
-          sx={{ ml: '1rem' }}
+          variant="outlined"
+          sx={{
+            borderRadius: '6px',
+            textTransform: 'none',
+            fontWeight: 500
+          }}
           onClick={handleMenuOpen}
         >
           {t('columns')}
         </Button>
 
-        <Menu
-          anchorEl={anchorel}
-          open={Boolean(anchorel)}
-          onClose={handleMenuClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'left',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'left',
-          }}
-          size="small"
-        >
-          {tasksWithDuration && tasksWithDuration?.length > 0 && Object.keys(tasksWithDuration[0]).map((columnName) => {
-            if (excludedColumns.includes(columnName))
-              return null;
-            return (
-              <MenuItem key={columnName} dense>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      size="small"
-                      checked={isColumnVisible(columnName)}
-                      onChange={() => handleColumnToggle(columnName)}
-                    />
-                  }
-                  label={<Typography variant="body2">{t(columnName)}</Typography>}
-                />
-              </MenuItem>
-            );
-          })}
-
-          <div style={{ display: 'flex', justifyContent: 'space-between', margin: '0 5px' }}>
-            <Button onClick={handleShowAll}>
-              {<Typography variant="body2">{t('showAll')}</Typography>}
-            </Button>
-            <Button onClick={handleHideAll}>
-              {<Typography variant="body2">{t('hideAll')}</Typography>}
-            </Button>
-          </div>
-        </Menu>
+        <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+          {visibleColumns.length} of {filteredColumnNames.length} columns visible
+        </Typography>
       </div>
-      
-      <TableContainer sx={{ m: 1 }}>
-        <Table size="small">
+
+      {/* Column Visibility Menu */}
+      <Menu
+        anchorEl={anchorel}
+        open={Boolean(anchorel)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+        PaperProps={{
+          sx: {
+            maxHeight: 300,
+            width: 250,
+            borderRadius: '8px',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+            mt: 1
+          }
+        }}
+      >
+        {tasksWithDuration && tasksWithDuration?.length > 0 && Object.keys(tasksWithDuration[0]).map((columnName) => {
+          if (excludedColumns.includes(columnName))
+            return null;
+          return (
+            <MenuItem key={columnName} dense sx={{ py: 0.5 }}>
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={isColumnVisible(columnName)}
+                    onChange={() => handleColumnToggle(columnName)}
+                    sx={{
+                      '& .MuiSwitch-switchBase.Mui-checked': {
+                        color: theme.palette.primary.main,
+                      },
+                      '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                        backgroundColor: theme.palette.primary.main,
+                      },
+                    }}
+                  />
+                }
+                label={<Typography variant="body2" sx={{ fontSize: '0.875rem' }}>{t(columnName)}</Typography>}
+                sx={{ width: '100%', ml: 0 }}
+              />
+            </MenuItem>
+          );
+        })}
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          margin: '8px 16px',
+          paddingTop: '8px',
+          borderTop: `1px solid ${theme.palette.divider}`
+        }}>
+          <Button
+            size="small"
+            onClick={handleShowAll}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.75rem',
+              minWidth: 'auto',
+              px: 1
+            }}
+          >
+            {t('showAll')}
+          </Button>
+          <Button
+            size="small"
+            onClick={handleHideAll}
+            sx={{
+              textTransform: 'none',
+              fontSize: '0.75rem',
+              minWidth: 'auto',
+              px: 1
+            }}
+          >
+            {t('hideAll')}
+          </Button>
+        </div>
+      </Menu>
+
+      {/* Enhanced Table Container */}
+      <TableContainer sx={{
+        borderRadius: '8px',
+        border: `1px solid ${theme.palette.divider}`,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        backgroundColor: theme.palette.background.paper,
+        '& .MuiTable-root': {
+          borderCollapse: 'separate',
+          borderSpacing: '0',
+        }
+      }}>
+        <Table size="small" sx={{
+          '& .MuiTableHead-root': {
+            backgroundColor: theme.palette.grey[50],
+            '& .MuiTableCell-head': {
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              color: theme.palette.text.primary,
+              borderBottom: `2px solid ${theme.palette.divider}`,
+              padding: '12px 16px',
+              whiteSpace: 'nowrap'
+            }
+          },
+          '& .MuiTableBody-root': {
+            '& .MuiTableRow-root': {
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+              },
+              '& .MuiTableCell-body': {
+                padding: '8px 16px',
+                borderBottom: `1px solid ${theme.palette.divider}`,
+                fontSize: '0.875rem',
+                whiteSpace: 'nowrap',
+                maxWidth: '200px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis'
+              }
+            }
+          }
+        }}>
           <TableHead>{renderTableHeader()}</TableHead>
           <TableBody>{renderTasks()}</TableBody>
         </Table>
       </TableContainer>
+
+      {/* Pagination Controls */}
+      {tasksWithDuration && tasksWithDuration.length > itemsPerPage && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: '16px',
+          padding: '12px 16px',
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: '8px',
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          <Typography variant="body2" color="text.secondary">
+            Showing {Math.min((currentPage - 1) * itemsPerPage + 1, tasksWithDuration.length)} to {Math.min(currentPage * itemsPerPage, tasksWithDuration.length)} of {tasksWithDuration.length} tasks
+          </Typography>
+
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              sx={{
+                minWidth: 'auto',
+                px: 2,
+                textTransform: 'none',
+                borderRadius: '6px'
+              }}
+            >
+              Previous
+            </Button>
+
+            <Typography variant="body2" sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mx: 1,
+              fontWeight: 500
+            }}>
+              Page {currentPage} of {Math.ceil(tasksWithDuration.length / itemsPerPage)}
+            </Typography>
+
+            <Button
+              size="small"
+              variant="outlined"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(tasksWithDuration.length / itemsPerPage)))}
+              disabled={currentPage === Math.ceil(tasksWithDuration.length / itemsPerPage)}
+              sx={{
+                minWidth: 'auto',
+                px: 2,
+                textTransform: 'none',
+                borderRadius: '6px'
+              }}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </>
   );
 };

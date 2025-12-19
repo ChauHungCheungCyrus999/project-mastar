@@ -311,23 +311,32 @@ const MilestoneSetup = () => {
   return (
     <>
       <Paper variant="outlined" sx={{ p: 2 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant='subtitle1' gutterBottom>
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: isMobile ? 'column' : 'row',
+          justifyContent: isMobile ? 'flex-start' : 'space-between',
+          alignItems: isMobile ? 'flex-start' : 'center',
+          gap: isMobile ? '0px' : '0'
+        }}>
+          <Typography variant='subtitle1' gutterBottom sx={{ mb: isMobile ? 1 : 0 }}>
             {t('milestoneSetup')}
           </Typography>
-          <div>
+          <div style={{ 
+            display: 'flex', gap: '8px',
+            
+          }}>
           <Button
               variant="contained"
               color="error"
               size="small"
-              sx={{ mb: 2, mr: 2 }}
+              sx={{ mb: isMobile ? 1 : 0, mr: 0 }}
               startIcon={<Delete />}
               onClick={handleOpenBulkDeleteDialog} // Open the bulk delete confirmation dialog
               disabled={selectedMilestoneIds.length === 0}
             >
               {t('deleteSelected')}
             </Button>
-            <Button variant="contained" size="small" sx={{ mb: 2 }} startIcon={<Add />} onClick={handleOpenDialog}>
+            <Button variant="contained" size="small" sx={{ mb: isMobile ? 1 : 0 }} startIcon={<Add />} onClick={handleOpenDialog}>
               {t('create')}
             </Button>
           </div>

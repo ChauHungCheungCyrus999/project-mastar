@@ -60,6 +60,7 @@ const AnnouncementManagement = () => {
   }
 
   const isMobile = useMediaQuery('(max-width:600px)');
+  const isTablet = useMediaQuery('(max-width:960px)');
   
   const alertRef = useRef();
   const { user } = useContext(UserContext);
@@ -168,7 +169,22 @@ const AnnouncementManagement = () => {
 
   // Function to handle preview dialog open
   const handleOpenPreviewDialog = (announcement) => {
-    setPreviewAnnouncement(announcement);
+    const previewData = {
+      ...announcement,
+      createdBy: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+        organization: user.organization,
+        department: user.department,
+        jobTitle: user.jobTitle
+      },
+      project: project && announcement.project === project._id ? project : null,
+      startDate: announcement.startDate || new Date()
+    };
+    setPreviewAnnouncement(previewData);
     setOpenPreviewDialog(true);
   };
 
@@ -184,33 +200,67 @@ const AnnouncementManagement = () => {
     id: announcement._id, // Map `_id` to `id` for DataGrid
   }));
 
+  // Render announcement content without HTML tags; keep line breaks
+  const plainContent = (value) => {
+    if (!value) return '';
+    return value
+      .replace(/<br\s*\/?>(\r\n)?/gi, '\n')
+      .replace(/<[^>]*>/g, '')
+      .trim();
+  };
+
   // DataGrid columns
   const columns = [
     { field: 'project',
       headerName: t('project'),
-      width: 200,
+      width: isMobile ? 120 : 200,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => (
         <ProjectFolder project={params.value} />
       ),
     },
-    { field: 'title', headerName: t('title'), width: 200 },
-    { field: 'content', headerName: t('content'), width: 400 },
+    { field: 'title', headerName: t('title'), width: isMobile ? 150 : 200, flex: isMobile ? 0 : undefined },
+    {
+      field: 'content',
+      headerName: t('content'),
+      width: isMobile ? 200 : isTablet ? 300 : 400,
+      flex: isMobile ? 0 : undefined,
+      valueGetter: (params) => plainContent(params.row.content),
+      renderCell: (params) => (
+        <Typography
+          variant="body2"
+          sx={{
+            whiteSpace: 'pre-line',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            display: '-webkit-box',
+            WebkitLineClamp: 1, // clamp to two lines
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {plainContent(params.row.content)}
+        </Typography>
+      ),
+    },
     {
       field: 'startDate',
       headerName: t('startDate'),
-      width: 150,
+      width: isMobile ? 110 : 150,
+      flex: isMobile ? 0 : undefined,
       valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString() : null,
     },
     {
       field: 'endDate',
       headerName: t('endDate'),
-      width: 150,
+      width: isMobile ? 110 : 150,
+      flex: isMobile ? 0 : undefined,
       valueFormatter: (params) => params.value ? new Date(params.value).toLocaleDateString() : null,
     },
     {
       field: 'visibleTo',
       headerName: t('visibleTo'),
-      width: 200,
+      width: isMobile ? 100 : 200,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => {
         const visibleTo = params.value || [];
         return (<AccountAvatar users={visibleTo} size="small" />);
@@ -219,32 +269,34 @@ const AnnouncementManagement = () => {
     {
       field: 'active',
       headerName: t('active'),
-      width: 100,
+      width: isMobile ? 80 : 100,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => (params.value ? t('yes') : t('no')),
     },
     {
       field: 'actions',
       type: 'actions',
       headerName: t('action'),
-      width: 150,
+      width: isMobile ? 120 : 150,
+      flex: isMobile ? 0 : undefined,
       renderCell: (params) => (
-        <>
+        <Box sx={{ display: 'flex', gap: isMobile ? 0 : 0.5 }}>
           <Tooltip title={t('edit')}>
-            <IconButton onClick={() => handleEditAnnouncement(params.row)}>
-              <Edit />
+            <IconButton size={isMobile ? 'small' : 'medium'} onClick={() => handleEditAnnouncement(params.row)}>
+              <Edit fontSize={isMobile ? 'small' : 'medium'} />
             </IconButton>
           </Tooltip>
           <Tooltip title={t('delete')}>
-            <IconButton onClick={() => handleOpenDeleteConfirmation(params.row.id)}>
-              <Delete />
+            <IconButton size={isMobile ? 'small' : 'medium'} onClick={() => handleOpenDeleteConfirmation(params.row.id)}>
+              <Delete fontSize={isMobile ? 'small' : 'medium'} />
             </IconButton>
           </Tooltip>
           <Tooltip title={t('preview')}>
-            <IconButton onClick={() => handleOpenPreviewDialog(params.row)}>
-              <Preview />
+            <IconButton size={isMobile ? 'small' : 'medium'} onClick={() => handleOpenPreviewDialog(params.row)}>
+              <Preview fontSize={isMobile ? 'small' : 'medium'} />
             </IconButton>
           </Tooltip>
-        </>
+        </Box>
       ),
     },
   ];
@@ -285,7 +337,8 @@ const AnnouncementManagement = () => {
       alertRef.current.displayAlert('success', t('createSuccess'));
     } catch (error) {
       console.error('Error creating announcement:', error);
-      alertRef.current.displayAlert('error', t('createFail'));
+      const errorMessage = error.response?.data?.message || error.message || t('createFail');
+      alertRef.current.displayAlert('error', `Creation Unsuccessful: ${errorMessage}`);
     }
   };
 
@@ -302,7 +355,8 @@ const AnnouncementManagement = () => {
       alertRef.current.displayAlert('success', t('saveSuccess'));
     } catch (error) {
       console.error('Error updating announcement:', error);
-      alertRef.current.displayAlert('error', t('saveFail'));
+      const errorMessage = error.response?.data?.message || error.message || t('saveFail');
+      alertRef.current.displayAlert('error', `Edit Unsuccessful: ${errorMessage}`);
     }
   };
 
@@ -365,7 +419,8 @@ const AnnouncementManagement = () => {
 
   const handleSaveAnnouncement = () => {
     if (!selectedAnnouncement.title.trim()) {
-      alertRef.current.displayAlert('error', t('saveFail'));
+      const errorMsg = mode === 'create' ? t('createFail') : t('saveFail');
+      alertRef.current.displayAlert('error', errorMsg);
       return;
     }
 
@@ -375,8 +430,8 @@ const AnnouncementManagement = () => {
         startDate,
         endDate,
         attachments,
-        visibleTo: projectId !== 'undefined' ? personInCharge : personInCharge?.map(person => person._id),
-        project: projectId !== 'undefined' ? projectId : ''
+        visibleTo: personInCharge?.map(person => person._id),
+        project: selectedAnnouncement.project || null
       });
       handleCloseDialog();
     } else {
@@ -385,8 +440,8 @@ const AnnouncementManagement = () => {
         startDate,
         endDate,
         attachments,
-        visibleTo: personInCharge,
-        project: projectId
+        visibleTo: personInCharge?.map(person => person._id),
+        project: selectedAnnouncement.project || null
       });
     }
   };
@@ -467,22 +522,22 @@ const AnnouncementManagement = () => {
       pageTitle="announcement"
       breadcrumbItems={breadcrumbItems}
       actions={
-        <Stack direction="row">
+        <Stack direction="row" spacing={1} sx={{ width: isMobile ? '100%' : 'auto', justifyContent: isMobile ? 'center' : 'flex-start' }}>
           <Button
             variant="contained"
             color="error"
             size="small"
-            sx={{ mb: 2, mr: 2 }}
+            sx={{ mb: 2, width: isMobile ? '48%' : 'auto' }}
             startIcon={<Delete />}
             onClick={handleOpenBulkDeleteConfirmation} // Bulk delete action
             disabled={selectedAnnouncementIds?.length === 0}
           >
-            {t('deleteSelected')}
+            {isMobile ? t('delete') : t('deleteSelected')}
           </Button>
           <Button
             variant="contained"
             size="small"
-            sx={{ mb: 2 }}
+            sx={{ mb: 2, width: isMobile ? '48%' : 'auto' }}
             startIcon={<Add />}
             onClick={handleOpenDialog}
           >
@@ -492,7 +547,7 @@ const AnnouncementManagement = () => {
       }
     >
       <CssBaseline />
-      <Paper variant="outlined" sx={{ p: 2 }}>
+      <Paper variant="outlined" sx={{ p: isMobile ? 1 : 2 }}>
         {/*<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant='subtitle2' gutterBottom>
             {t('announcementManagement')}
@@ -504,7 +559,7 @@ const AnnouncementManagement = () => {
         </div>*/}
 
         <CDataGrid
-          displayCheckbox={true}
+          displayCheckbox={!isMobile}
           displayToolbar={true}
           columns={columns}
           rows={rows}
@@ -526,16 +581,17 @@ const AnnouncementManagement = () => {
           </Typography>
         }
         maxWidth="md"
+        fullScreen={isMobile}
       >
         {user.email === process.env.REACT_APP_ADMIN_EMAIL && (
             <ProjectSelector
               projectId={selectedAnnouncement.project || ''}
               displayAllOption={true}
               onChange={(projectId) => {
-                setSelectedAnnouncement({
-                  ...selectedAnnouncement,
+                setSelectedAnnouncement((prev) => ({
+                  ...prev,
                   project: (projectId === '' || projectId === "undefined") ? null : projectId
-                });
+                }));
               }}
             />
           )}
@@ -569,8 +625,8 @@ const AnnouncementManagement = () => {
             onChange={(e) => setSelectedAnnouncement({ ...selectedAnnouncement, content: e.target.value })}
           />*/}
 
-          <Grid container spacing={2} sx={{ mt: '0.1rem' }}>
-            <Grid item xs={6}>
+          <Grid container spacing={isMobile ? 1 : 2} sx={{ mt: '0.1rem' }}>
+            <Grid item xs={12} sm={6}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label={t('startDate')}
@@ -589,7 +645,7 @@ const AnnouncementManagement = () => {
                 />
               </LocalizationProvider>
             </Grid>
-            <Grid item xs={6} mb={1}>
+            <Grid item xs={12} sm={6} mb={1}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
                   label={t('endDate')}

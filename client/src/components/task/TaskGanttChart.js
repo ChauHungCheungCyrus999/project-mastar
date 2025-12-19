@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Grid, Stack, Typography, Button, ButtonGroup, Tooltip } from '@mui/material';
 import { ViewMode, Gantt } from "gantt-task-react";
-import SplitPane from 'react-split-pane';
-import './split-pane-resizer.css';
+// import SplitPane from 'react-split-pane';
+// import './split-pane-resizer.css';
 
 import CAlert from '../custom/CAlert';
 
@@ -139,13 +139,13 @@ const TaskGanttChart = ({ project, tasks, setTasks }) => {
   }, [tasks, dateMode]);
 
   const [isChecked, setIsChecked] = useState(true);
-  let columnWidth = 60;
+  let columnWidth = 40;
   if (view === ViewMode.Week) {
-    columnWidth = 100;
+    columnWidth = 65;
   } else if (view === ViewMode.Month) {
-    columnWidth = 100;
+    columnWidth = 65;
   } else if (view === ViewMode.Year) {
-    columnWidth = 300;
+    columnWidth = 150;
   }
 
   const saveTasks = () => {
@@ -236,66 +236,59 @@ const TaskGanttChart = ({ project, tasks, setTasks }) => {
       {ganttTasks?.filter(task => task.start && task.end)?.length > 0 ? (
         <>
           <Grid container spacing={2} mt={1}>
-            <SplitPane
-              split="vertical"
-              minSize={100}
-              defaultSize={isChecked ? 1100 : '100%'}
-              style={{ position: 'relative', overflow: 'hidden' }}
-            >
-              {isChecked && (
-                <Grid item xs={12}>
-                  <TaskGanttChartTable
-                    project={project}
-                    tasks={tasks}
-                    onTaskDateChange={handleTaskDateChange}
-                    dateMode={dateMode}
-                  />
-                </Grid>
-              )}
-              <Grid item xs={isChecked ? 8 : 12} sx={{ mt: '30px' }}>
-                <Gantt
-                  tasks={ganttTasks?.filter(task => task.start && task.end)}
-                  viewMode={view}
-                  locale={i18n.language}
-                  onSelect={handleSelect}
-                  onDateChange={handleTaskChange}
-                  onDelete={onDeleteClick}
-                  onDoubleClick={handleDblClick}
-                  listCellWidth={''}
-                  columnWidth={columnWidth}
-                  rowHeight={52.89}
-                  taskListTable={{ locale: i18n.language }}
-                />
-  
-                <Typography variant="caption" color="error">
-                  {t('ganttChartNotice')}
-                </Typography>
-  
-                {isEditFormOpen && (
-                  <TaskEditForm
-                    taskId={editedTask._id}
-                    setTasks={setTasks}
-                    mode="update"
-                    open={isEditFormOpen}
-                    handleClose={handleCloseForm}
-                    handleSave={handleSaveTask}
-                    setTaskToDelete={setTaskToDelete}
-                    setOpenConfirmDeleteDialog={setOpenConfirmDeleteDialog}
-                  />
-                )}
-  
-                {/* Confirmation Delete */}
-                <ConfirmDeleteDialog
-                  title={t('deleteTask')}
-                  content={t('deleteTaskConfirm')}
-                  open={openConfirmDeleteDialog}
-                  onCancel={onCancelDelete}
-                  onConfirm={onConfirmDelete}
+            {isChecked && (
+              <Grid item xs={12}>
+                <TaskGanttChartTable
+                  project={project}
+                  tasks={tasks}
+                  onTaskDateChange={handleTaskDateChange}
+                  dateMode={dateMode}
                 />
               </Grid>
-            </SplitPane>
+            )}
+            <Grid item xs={12} sx={{ mt: '30px' }}>
+              <Gantt
+                tasks={ganttTasks?.filter(task => task.start && task.end)}
+                viewMode={view}
+                locale={i18n.language}
+                onSelect={handleSelect}
+                onDateChange={handleTaskChange}
+                onDelete={onDeleteClick}
+                onDoubleClick={handleDblClick}
+                listCellWidth={''}
+                columnWidth={columnWidth}
+                rowHeight={18}
+                taskListTable={{ locale: i18n.language }}
+              />
+
+              <Typography variant="caption" color="error">
+                {t('ganttChartNotice')}
+              </Typography>
+
+              {isEditFormOpen && (
+                <TaskEditForm
+                  taskId={editedTask._id}
+                  setTasks={setTasks}
+                  mode="update"
+                  open={isEditFormOpen}
+                  handleClose={handleCloseForm}
+                  handleSave={handleSaveTask}
+                  setTaskToDelete={setTaskToDelete}
+                  setOpenConfirmDeleteDialog={setOpenConfirmDeleteDialog}
+                />
+              )}
+
+              {/* Confirmation Delete */}
+              <ConfirmDeleteDialog
+                title={t('deleteTask')}
+                content={t('deleteTaskConfirm')}
+                open={openConfirmDeleteDialog}
+                onCancel={onCancelDelete}
+                onConfirm={onConfirmDelete}
+              />
+            </Grid>
           </Grid>
-  
+
           <Button variant="contained" onClick={saveTasks}>
             {t('save')}
           </Button>

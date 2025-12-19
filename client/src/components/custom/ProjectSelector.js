@@ -22,7 +22,9 @@ const ProjectSelector = ({ projectId = '', onChange, displayAllOption = true, di
 
         if (displayAllOption && !projectId) {
           setSelectedProjectId('');
-          onChange(''); // Set the default selected project to "all"
+          if (onChange) {
+            onChange(''); // Set the default selected project to "all"
+          }
         } else if (projectId) {
           setSelectedProjectId(projectId); // Set the default selected project to the provided projectId
         }
@@ -32,7 +34,7 @@ const ProjectSelector = ({ projectId = '', onChange, displayAllOption = true, di
     };
 
     fetchProjects();
-  }, [projectId, displayAllOption, onChange]);
+  }, [projectId, displayAllOption]);
 
   const handleChange = (event) => {
     setSelectedProjectId(event.target.value);
