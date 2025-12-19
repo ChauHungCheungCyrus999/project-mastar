@@ -109,7 +109,7 @@ const AnnouncementManagement = () => {
     createdDate: new Date(),
     updatedBy: user._id,
     updatedDate: new Date(),
-    project: projectId || '',  // Default to '' if no project is selected
+    project: '',  // Default to 'All' project
   });
   
   const [content, setContent] = useState();
@@ -331,6 +331,7 @@ const AnnouncementManagement = () => {
   };
 
   const createAnnouncement = async (announcement) => {
+    // If project is null, the announcement is sent to all projects/users
     try {
       const response = await axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/announcement`, announcement);
       setAnnouncements([...announcements, response.data]);
@@ -384,7 +385,7 @@ const AnnouncementManagement = () => {
       createdDate: new Date(),
       updatedBy: user._id,
       updatedDate: new Date(),
-      project: projectId || '',
+      project: '',  // Default to 'All' project when creating announcement
     });
   
     setStartDate('');
@@ -409,7 +410,7 @@ const AnnouncementManagement = () => {
       createdDate: new Date(),
       updatedBy: user._id,
       updatedDate: new Date(),
-      project: projectId || '',
+      project: '',  // Reset to 'All' project
     });
     setStartDate('');
     setEndDate('');
@@ -421,6 +422,11 @@ const AnnouncementManagement = () => {
     if (!selectedAnnouncement.title.trim()) {
       const errorMsg = mode === 'create' ? t('createFail') : t('saveFail');
       alertRef.current.displayAlert('error', errorMsg);
+      return;
+    }
+
+    if (personInCharge.length === 0) {
+      alertRef.current.displayAlert('error', 'Please select at least one user to make the announcement visible to.');
       return;
     }
 

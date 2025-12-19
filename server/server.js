@@ -379,7 +379,7 @@ mongoose.connect(process.env.DB_CONNECTION_URL, {
   // Announcement
   app.post('/api/announcement', auditMiddleware, upload.array('attachments'), announcementController.createAnnouncement);
   app.get('/api/announcements', authMiddleware, announcementController.getAllAnnouncements);
-  app.get('/api/announcementsByUser/active', authMiddleware, announcementController.getAllActiveAnnouncementsByUser);
+  app.get('/api/announcementsByUser', authMiddleware, announcementController.getAllAnnouncementsByUser);
   app.get('/api/announcements/:projectId', auditMiddleware, announcementController.getAnnouncementsByProjectId);
   app.get('/api/announcements/:projectId/active', authMiddleware, announcementController.getActiveAnnouncementsByProjectId);
   app.get('/api/announcement/:id', auditMiddleware, announcementController.getAnnouncementById);

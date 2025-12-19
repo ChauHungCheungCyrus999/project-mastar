@@ -46,23 +46,22 @@ const Announcement = () => {
     const fetchAnnouncements = async () => {
       try {
         setLoading(true); // Ensure loading state is set before the API call
-        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/announcementsByUser/active`, {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/announcementsByUser`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
 
         if (response.data && Array.isArray(response.data)) {
-          setAnnouncements(response.data);
-
-          // Extract unique projects
-          const projectTitles = [...new Set(response.data.map(a => a.project?.title || ''))].filter(Boolean);
-          setProjects(projectTitles);
+          const sortedData = response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+          setAnnouncements(sortedData);
 
           if (projectId) {
-            setFilteredAnnouncements(response.data.filter(a => a.project?._id === projectId));
+            setFilteredAnnouncements(sortedData.filter(a => a.project?._id === projectId));
+            setSelectedProject(projectId);
           } else {
-            setFilteredAnnouncements(response.data);
+            setFilteredAnnouncements(sortedData);
+            setSelectedProject('all');
           }
         } else {
           console.error('Invalid API response:', response.data);
@@ -78,8 +77,23 @@ const Announcement = () => {
       }
     };
 
+    const fetchProjects = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/user/${user._id}/projects`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setProjects(response.data);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setProjects([]);
+      }
+    };
+
     fetchAnnouncements();
-  }, [projectId]);
+    fetchProjects();
+  }, [projectId, user._id]);
 
   // Function to check if the announcement is within the last 30 days
   const isNewAnnouncement = (date) => {
@@ -100,12 +114,12 @@ const Announcement = () => {
   };
 
   // Handle project filter
-  const handleProjectClick = (project) => {
-    setSelectedProject(project);
-    if (project === 'all') {
+  const handleProjectClick = (projectId) => {
+    setSelectedProject(projectId);
+    if (projectId === 'all') {
       setFilteredAnnouncements(announcements);
     } else {
-      setFilteredAnnouncements(announcements.filter(a => a.project?.title === project));
+      setFilteredAnnouncements(announcements.filter(a => a.project?._id === projectId));
     }
   };
 
@@ -113,7 +127,7 @@ const Announcement = () => {
     <MainContent pageTitle="announcement" breadcrumbItems={breadcrumbItems}>
       <CssBaseline />
 
-      <Box sx={{ maxWidth: '1200px', margin: 'auto', p: 2 }}>
+      <Box sx={{ maxWidth: '1200px', width: '100%', margin: 'auto', p: 2 }}>
         {/* Render project filter chips if no projectId in URL */}
         {!projectId && (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
@@ -125,13 +139,13 @@ const Announcement = () => {
               clickable
             />
 
-            {projects.map((project, index) => (
+            {projects.map((project) => (
               <Chip
-                key={index}
-                label={project}
-                onClick={() => handleProjectClick(project)}
-                color={selectedProject === project ? 'primary' : 'default'}
-                variant={selectedProject === project ? 'filled' : 'outlined'}
+                key={project._id}
+                label={project.title}
+                onClick={() => handleProjectClick(project._id)}
+                color={selectedProject === project._id ? 'primary' : 'default'}
+                variant={selectedProject === project._id ? 'filled' : 'outlined'}
                 clickable
               />
             ))}
