@@ -243,10 +243,8 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
 
   // Shows all available columns in the table
   const handleShowAll = () => {
-    const columnNames = tasksWithDuration && tasksWithDuration?.length > 0 ? Object.keys(tasksWithDuration[0]) : [];
-    const filteredColumnNames = columnNames.filter((columnName) => !excludedColumns.includes(columnName));
-    setVisibleColumns(filteredColumnNames);
-    storeVisibleColumns(filteredColumnNames);
+    setVisibleColumns(sortedFilteredColumnNames);
+    storeVisibleColumns(sortedFilteredColumnNames);
   };
 
   // Hides all columns in the table
@@ -288,8 +286,12 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
   }, [visibleColumns]);
 
   
-  const columnNames = Object.keys(tasksWithDuration?.[0] ?? {});
+  const columnNames = Array.from(new Set(tasksWithDuration.flatMap(task => Object.keys(task))));
   const filteredColumnNames = columnNames.filter((columnName) => !excludedColumns.includes(columnName));
+
+  // Preferred order for columns in menu and table
+  const preferredOrder = ['taskName', 'category', 'personInCharge', 'status', 'priority', 'difficultyLevel', 'startDate', 'endDate', 'actualStartDate', 'actualEndDate', 'milestone', 'subtasks', 'tags'];
+  const sortedFilteredColumnNames = preferredOrder.filter(col => filteredColumnNames.includes(col)).concat(filteredColumnNames.filter(col => !preferredOrder.includes(col)));
 
   // Renders the table header with visible columns
   const renderTableHeader = () => {
@@ -298,7 +300,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
 
     return (
       <TableRow style={{ whiteSpace: 'nowrap' }}>
-        {filteredColumnNames.map((columnName) => {
+        {sortedFilteredColumnNames.map((columnName) => {
           if (isColumnVisible(columnName)) {
             return (
               <TableCell
@@ -341,7 +343,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
         >
           <TableHead>
             <TableRow>
-              {filteredColumnNames.map((columnName) => (
+              {sortedFilteredColumnNames.map((columnName) => (
                 <TableCell key={columnName}>
                   <Skeleton width={100} />
                 </TableCell>
@@ -351,7 +353,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
           <TableBody>
             {[...Array(5)].map((_, rowIndex) => (
               <TableRow key={rowIndex}>
-                {filteredColumnNames.map((columnName, colIndex) => (
+                {sortedFilteredColumnNames.map((columnName, colIndex) => (
                   <TableCell key={colIndex}>
                     <Skeleton
                       variant={columnName === 'tags' || columnName === 'status' || columnName === 'priority' || columnName === 'difficultyLevel' ? 'rounded' : 'text'}
@@ -398,7 +400,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
 
     return currentTasks.map((task, index) => (
       <TableRow key={startIndex + index} style={{ whiteSpace: 'nowrap' }} hover>
-        {filteredColumnNames.map((columnName) => {
+        {sortedFilteredColumnNames.map((columnName) => {
           const value = task[columnName];
     
           if (excludedColumns.includes(columnName) || !isColumnVisible(columnName))
@@ -644,7 +646,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
         </Button>
 
         <Typography variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-          {visibleColumns.length} of {filteredColumnNames.length} columns visible
+          {visibleColumns.length} of {sortedFilteredColumnNames.length} columns visible
         </Typography>
       </div>
 
@@ -671,7 +673,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
           }
         }}
       >
-        {tasksWithDuration && tasksWithDuration?.length > 0 && Object.keys(tasksWithDuration[0]).map((columnName) => {
+        {sortedFilteredColumnNames.map((columnName) => {
           if (excludedColumns.includes(columnName))
             return null;
           return (
