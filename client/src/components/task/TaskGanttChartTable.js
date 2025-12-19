@@ -193,8 +193,14 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
     "_id",
     "projectId",
     "description",
+    "attachments",
     "color",
     "project",
+    "createdBy",
+    "createdDate",
+    "updatedBy",
+    "updatedDate",
+    "comments",
     "__v",
   ];
 
@@ -554,6 +560,30 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                 {formatDate(value)}
               </TableCell>
             );
+          } else if (columnName === 'project') {
+            return (
+              <TableCell key={columnName}>
+                {value?.title || value?.name || ''}
+              </TableCell>
+            );
+          } else if (columnName === 'createdBy' || columnName === 'updatedBy') {
+            return (
+              <TableCell key={columnName}>
+                {value?.firstName && value?.lastName ? `${value.firstName} ${value.lastName}` : value?.username || ''}
+              </TableCell>
+            );
+          } else if (columnName === 'milestone') {
+            return (
+              <TableCell key={columnName}>
+                {value?.title || value?.name || ''}
+              </TableCell>
+            );
+          } else if (columnName === 'attachments' || columnName === 'subtasks' || columnName === 'comments') {
+            return (
+              <TableCell key={columnName}>
+                {Array.isArray(value) ? value.length : 0}
+              </TableCell>
+            );
           } if (columnName === 'duration') {
             return (
               <TableCell key={columnName}>
@@ -577,7 +607,7 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
                   whiteSpace: 'nowrap'
                 }}
               >
-                {value}
+                {typeof value === 'object' ? JSON.stringify(value) : value}
               </TableCell>
             );
           }
