@@ -83,22 +83,13 @@ exports.getAllAnnouncements = async (req, res) => {
   }
 };
 
-// Get all active announcements by user
-exports.getAllActiveAnnouncementsByUser = async (req, res) => {
+// Get all announcements by user
+exports.getAllAnnouncementsByUser = async (req, res) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set the time to the start of the day
-
     const userId = req.user._id; // Assuming the user ID is available in the request object
 
     const announcements = await Announcement.find({
-      active: true,
-      startDate: { $lte: today },
-      endDate: { $gte: today },
-      $or: [
-        { visibleTo: userId }, // Check if the user is in the visibleTo array
-        { visibleTo: userId, project: null } // Check if visibleTo does not include userId and project is null
-      ]
+      visibleTo: userId, // Check if the user is in the visibleTo array
     })
       .populate('visibleTo')
       .populate('createdBy')
