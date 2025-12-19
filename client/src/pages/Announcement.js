@@ -53,13 +53,14 @@ const Announcement = () => {
         });
 
         if (response.data && Array.isArray(response.data)) {
-          setAnnouncements(response.data);
+          const sortedData = response.data.sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate));
+          setAnnouncements(sortedData);
 
           if (projectId) {
-            setFilteredAnnouncements(response.data.filter(a => a.project?._id === projectId));
+            setFilteredAnnouncements(sortedData.filter(a => a.project?._id === projectId));
             setSelectedProject(projectId);
           } else {
-            setFilteredAnnouncements(response.data);
+            setFilteredAnnouncements(sortedData);
             setSelectedProject('all');
           }
         } else {
