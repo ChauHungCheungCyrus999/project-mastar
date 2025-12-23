@@ -16,13 +16,35 @@ const EventPopper = ({ event, anchorEl, open }) => {
     <Popper
       open={open}
       anchorEl={anchorEl}
-      placement="bottom-end"
-      disablePortal
+      placement="bottom-start"
+      disablePortal={false}
+      modifiers={[
+        {
+          name: 'offset',
+          options: {
+            offset: [0, 8],
+          },
+        },
+        {
+          name: 'preventOverflow',
+          options: {
+            padding: 8,
+          },
+        },
+        {
+          name: 'flip',
+          enabled: true,
+          options: {
+            fallbackPlacements: ['left-start', 'bottom-start', 'top-start'],
+          },
+        },
+      ]}
       sx={{
         zIndex: 10000,
         minWidth: 300,
         maxWidth: 500,
       }}
+      style={{ position: 'absolute' }}
     >
       <Paper sx={{ p: 2, borderRadius: 2, boxShadow: 3 }}>
         <Box display="flex" alignItems="center" justifyContent="space-between">

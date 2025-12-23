@@ -82,8 +82,8 @@ const ProjectCalendar = () => {
   const [selectedEventForPopper, setSelectedEventForPopper] = useState(null);
   const [popperOpen, setPopperOpen] = useState(false);
 
-  const handleMouseEnter = (info) => {
-    setPopperAnchorEl(info.el);
+  const handleMouseEnter = (info, event) => {
+    setPopperAnchorEl(event.currentTarget);
     setSelectedEventForPopper(info.event.extendedProps.event);
     setPopperOpen(true);
   };
@@ -96,8 +96,9 @@ const ProjectCalendar = () => {
   const renderEventContent = (eventInfo) => {
     return (
       <div
-        onMouseEnter={() => handleMouseEnter(eventInfo)}
+        onMouseEnter={(e) => handleMouseEnter(eventInfo, e)}
         onMouseLeave={handleMouseLeave}
+        style={{ cursor: 'pointer' }}
       >
         <b>{eventInfo.timeText}</b>
         <i>{eventInfo.event.title}</i>
@@ -382,6 +383,12 @@ const ProjectCalendar = () => {
   const handleSaveEvent = async (updatedEvent) => {
     try {
       const response = await axios.put(`${process.env.REACT_APP_SERVER_HOST}/api/event/${updatedEvent._id}`, updatedEvent);
+      
+      // Update event in local state
+      setEvents((prevEvents) =>
+        prevEvents.map(event => event._id === updatedEvent._id ? response.data : event)
+      );
+      
       return response.data;
     } catch (error) {
       console.error('Error updating event:', error);
@@ -392,6 +399,10 @@ const ProjectCalendar = () => {
   const onConfirmDelete = async () => {
     try {
       const response = await axios.delete(`${process.env.REACT_APP_SERVER_HOST}/api/event/${selectedEvent._id}`, selectedEvent);
+      
+      // Remove event from local state
+      setEvents((prevEvents) => prevEvents.filter(event => event._id !== selectedEvent._id));
+      
       alertRef.current.displayAlert('success', t('deleteSuccess'));
       setOpenConfirmDeleteDialog(false);
       setEditDialogOpen(false);
