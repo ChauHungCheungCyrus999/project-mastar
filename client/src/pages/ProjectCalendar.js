@@ -238,7 +238,7 @@ const ProjectCalendar = () => {
       )
     );
 
-    // Update eventUpdates state
+    // Track pending updates for Save
     setEventUpdates((prev) => {
       const existingUpdate = prev.find((u) => u.id === updatedEvent.id);
       return existingUpdate
@@ -337,6 +337,7 @@ const ProjectCalendar = () => {
         allDay: event.allDay,
         backgroundColor: event.color || '',
         //backgroundColor: getStatusColor(event.status),
+        groupId: event.groupId || null, // Group recurring events
         extendedProps: { event },
         rrule: isRecurring ? rrule : null,
       };
