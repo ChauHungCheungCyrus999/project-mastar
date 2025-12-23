@@ -180,16 +180,27 @@ const ProjectCalendar = () => {
 
   // Update event and eventUpdates when an event is dropped
   const handleEventDrop = (info) => {
+    const event = events.find((e) => e._id === info.event.id);
+    
+    let endDate = info.event.endStr;
+    
+    // For all-day events, subtract 1 day from endDate since we added +1 when mapping
+    if (event && event.allDay) {
+      const endDateObj = new Date(info.event.endStr);
+      endDateObj.setDate(endDateObj.getDate() - 1);
+      endDate = endDateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Hong_Kong' });
+    }
+
     const updatedEvent = {
       id: info.event.id,
       startDate: info.event.startStr,
-      endDate: info.event.endStr
+      endDate: endDate
     };
 
     // Update events state immediately
     setEvents((prevEvents) =>
       prevEvents.map(event =>
-        event._id === updatedEvent.id ? { ...event, ...updatedEvent } : event
+        event._id === updatedEvent.id ? { ...event, startDate: updatedEvent.startDate, endDate: updatedEvent.endDate } : event
       )
     );
 
@@ -203,13 +214,37 @@ const ProjectCalendar = () => {
   };
 
   const handleEventResize = (info) => {
+    const event = events.find((e) => e._id === info.event.id);
+    
+    let endDate = info.event.endStr;
+    
+    // For all-day events, subtract 1 day from endDate since we added +1 when mapping
+    if (event && event.allDay) {
+      const endDateObj = new Date(info.event.endStr);
+      endDateObj.setDate(endDateObj.getDate() - 1);
+      endDate = endDateObj.toLocaleDateString('en-CA', { timeZone: 'Asia/Hong_Kong' });
+    }
+
     const updatedEvent = {
       id: info.event.id,
       startDate: info.event.startStr,
-      endDate: info.event.endStr
+      endDate: endDate
     };
 
-    setEventUpdates((prev) => [...prev, updatedEvent]);
+    // Update events state immediately
+    setEvents((prevEvents) =>
+      prevEvents.map((event) =>
+        event._id === updatedEvent.id ? { ...event, startDate: updatedEvent.startDate, endDate: updatedEvent.endDate } : event
+      )
+    );
+
+    // Update eventUpdates state
+    setEventUpdates((prev) => {
+      const existingUpdate = prev.find((u) => u.id === updatedEvent.id);
+      return existingUpdate
+        ? prev.map((u) => (u.id === updatedEvent.id ? updatedEvent : u))
+        : [...prev, updatedEvent];
+    });
   };
 
   const handleSaveChanges = async () => {
@@ -302,7 +337,6 @@ const ProjectCalendar = () => {
         allDay: event.allDay,
         backgroundColor: event.color || '',
         //backgroundColor: getStatusColor(event.status),
-        groupId: event.groupId || null, // Group recurring events
         extendedProps: { event },
         rrule: isRecurring ? rrule : null,
       };

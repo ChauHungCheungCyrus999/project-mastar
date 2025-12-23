@@ -39,51 +39,42 @@ const AnnouncementList = ({ dashboardId, cardId }) => {
 
   // Fetch announcements from API
   useEffect(() => {
-    const fetchAnnouncements = async () => {
+    const fetchAnnouncementsByUser = async () => {
       if (!token) {
         console.error('User token is not available');
         setLoading(false);
         return;
       }
       try {
-        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/announcementsByUser/active`, {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/announcementsByUser`, {
           headers: {
-            Authorization: `Bearer ${token}` // Assuming JWT token is used for authentication
+            Authorization: `Bearer ${token}`
           }
         });
-        setAnnouncements(response.data);
+
+        const data = Array.isArray(response.data) ? response.data : [];
+
+        // If we're inside a project route, only keep announcements of that project
+        const filtered = projectId
+          ? data.filter((a) => a.project?._id === projectId)
+          : data;
+
+        // Sort newest first by createdDate if available, else startDate
+        const sorted = filtered.sort((a, b) => {
+          const ad = a.createdDate || a.startDate || 0;
+          const bd = b.createdDate || b.startDate || 0;
+          return new Date(bd) - new Date(ad);
+        });
+
+        setAnnouncements(sorted);
       } catch (error) {
         console.error('Failed to fetch announcements:', error);
       } finally {
         setLoading(false);
       }
     };
-  
-    const fetchActiveAnnouncementsByProjectId = async () => {
-      if (!token) {
-        console.error('User token is not available');
-        setLoading(false);
-        return;
-      }
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/announcements/${projectId}/active`, {
-          headers: {
-            Authorization: `Bearer ${token}` // Assuming JWT token is used for authentication
-          }
-        });
-        setAnnouncements(response.data);
-      } catch (error) {
-        console.error('Failed to fetch announcements:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-  
-    if (projectId) {
-      fetchActiveAnnouncementsByProjectId();
-    } else {
-      fetchAnnouncements();
-    }
+
+    fetchAnnouncementsByUser();
   }, [projectId, token]);  
 
   // Handle row click to open dialog
