@@ -567,7 +567,7 @@ const TaskProgress = () => {
     <MainContent pageTitle={t('progress')} breadcrumbItems={breadcrumbItems}>
       {project && (
         <>
-          {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "createTask") ? (
+          {user.email === process.env.REACT_APP_ADMIN_EMAIL || (user?.permissions?.some(permission => permission === "createTask") && user?.role !== "Stakeholder") ? (
             <CreateTaskBtn setTasks={setTasks} />
           ) : null}
 

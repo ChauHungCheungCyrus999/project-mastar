@@ -83,7 +83,7 @@ const CContextMenu = ({
           </MenuItem>
         )}
 
-        {mode === "task" && onMove && (user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "editTask")) ? (
+        {mode === "task" && onMove && (user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "editTask")) ? (
           <MenuItem onClick={onMove} dense>
             <ListItemIcon>
               <DriveFileMove />
@@ -119,7 +119,7 @@ const CContextMenu = ({
           </MenuItem>
         ) : null}
 
-        {mode === "task" && onDelete && (user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "deleteTask")) ? (
+        {mode === "task" && onDelete && (user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "deleteTask")) ? (
           <MenuItem onClick={onDelete} dense>
             <ListItemIcon>
               <Delete />

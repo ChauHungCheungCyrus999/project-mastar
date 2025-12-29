@@ -129,7 +129,7 @@ const TaskCalendar = ({ project, tasks, setTasks }) => {
     if (tasksForDate.length > 0) {
       setSelectedTasks(tasksForDate);
       setDialogOpen(true);
-    } else {
+    } else if (user?.role !== "Stakeholder") {
       setCreateFormOpen(true);
     }
   };

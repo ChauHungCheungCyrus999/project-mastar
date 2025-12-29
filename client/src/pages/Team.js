@@ -235,13 +235,13 @@ const Team = () => {
         onClose={handleCloseDialog}
         title={t('teamMemberDetails')}
       >
-        {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readContactInfo") ? (
+        {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readContactInfo") ? (
           <Box>
             <ContactInfo selectedTeamMember={selectedTeamMember} />
           </Box>
         ) : null}
 
-        {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readStatistics") ? (
+        {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readStatistics") ? (
           <Box mt={2}>
             <ListTableSwitcher
               project={project}
