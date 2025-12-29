@@ -330,7 +330,7 @@ const ProjectCalendar = () => {
       const isRecurring = event.recurrence !== 'None';
       const rrule = event ? getRRule(event) : null; // Add check to ensure event is defined
   
-      return {
+      const calendarEvent = {
         id: event._id,
         title: event.title,
         start: startStr,
@@ -338,10 +338,16 @@ const ProjectCalendar = () => {
         allDay: event.allDay,
         backgroundColor: event.color || '',
         //backgroundColor: getStatusColor(event.status),
-        groupId: event.groupId || null, // Group recurring events
         extendedProps: { event },
         rrule: isRecurring ? rrule : null,
       };
+
+      // Only set groupId for recurring events to group instances together
+      if (isRecurring && event.groupId) {
+        calendarEvent.groupId = event.groupId;
+      }
+
+      return calendarEvent;
     }
     return null; // Return null if the event doesn't meet the criteria
   }).filter(event => event !== null); // Filter out null values  

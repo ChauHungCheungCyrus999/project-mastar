@@ -43,7 +43,11 @@ const CreateProjectBtn = ({ setProjects, setFilteredProjects, mode, isCreateForm
   return (
     <div>
       {mode!=="fab"? (
-        <IconButton onClick={handleOpenCreateForm} color="text.secondary" sx={{ ml: 'auto' }}>
+        <IconButton
+          onClick={handleOpenCreateForm}
+          // Use sx color instead of invalid palette key for MUI color prop
+          sx={{ ml: 'auto', color: 'text.secondary' }}
+        >
           <Tooltip title={t('createProject')}>
             <AddCircleOutlineIcon />
           </Tooltip>

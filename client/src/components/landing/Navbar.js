@@ -141,7 +141,7 @@ function Navbar({ displayMenu }) {
             <LanguageSwitcher color="white" />
             
             <Button
-              color="primary.dark"
+              color="primary"
               variant="text"
               size="small"
               component="a"
@@ -151,7 +151,7 @@ function Navbar({ displayMenu }) {
               {t('signIn')}
             </Button>
             <Button
-              color="primary.dark"
+              color="primary"
               //variant="contained"
               size="small"
               component="a"
@@ -164,7 +164,7 @@ function Navbar({ displayMenu }) {
           <Box sx={{ display: { sm: '', md: 'none' } }}>
             <Button
               variant="text"
-              color="primary.dark"
+              color="primary"
               aria-label="menu"
               onClick={toggleDrawer(true)}
               sx={{ minWidth: '30px', p: '4px' }}
