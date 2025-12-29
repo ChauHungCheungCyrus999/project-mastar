@@ -2,6 +2,7 @@ const User = require('../models/user');
 const Project = require('../models/project');
 const Role = require('../models/role');
 const Permission = require('../models/permission');
+const Task = require('../models/task');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -260,10 +261,56 @@ exports.getUserProjects = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Find projects where the user is a team member
-    const projects = await Project.find({ 'teamMembers._id': userId });
+    // Find projects where the user is a team member and populate teamMembers
+    const projects = await Project.find({ 'teamMembers._id': userId })
+      .populate('createdBy', 'firstName lastName')
+      .populate('updatedBy', 'firstName lastName')
+      .populate({
+        path: 'teamMembers._id',
+        model: 'User',
+        select: 'firstName lastName gender email phone organization department jobTitle createdDate updatedDate'
+      });
 
-    res.json(projects); // Return the projects array directly
+    // Import Task model if not already imported
+    // const Task = require('../models/task');
+
+    const transformedProjects = await Promise.all(projects.map(async project => {
+      const tasks = await Task.find({ project: project._id });
+      
+      const transformedTeamMembers = project.teamMembers.map(member => {
+        return {
+          _id: member._id._id,
+          firstName: member._id.firstName,
+          lastName: member._id.lastName,
+          gender: member._id.gender,
+          email: member._id.email,
+          phone: member._id.phone,
+          organization: member._id.organization,
+          department: member._id.department,
+          jobTitle: member._id.jobTitle,
+          createdDate: member._id.createdDate,
+          updatedDate: member._id.updatedDate,
+          role: member.role
+        };
+      });
+
+      const totalTasks = tasks.filter(task => task.status !== 'Cancelled').length;
+      const completedTasks = tasks.filter(task => task.status === 'Done').length;
+
+      return {
+        _id: project._id,
+        title: project.title,
+        description: project.description,
+        teamMembers: transformedTeamMembers,
+        color: project.color,
+        createdDate: project.createdDate,
+        updatedDate: project.updatedDate,
+        totalTasks,
+        completedTasks
+      };
+    }));
+
+    res.json(transformedProjects);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Internal server error' });

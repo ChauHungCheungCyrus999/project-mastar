@@ -28,7 +28,7 @@ function stringToColor(string) {
   return color;
 }
 
-function stringAvatar(name, size) {
+function stringAvatar(name, email, size) {
   let initials = '';
 
   if (name) {
@@ -38,6 +38,9 @@ function stringAvatar(name, size) {
     } else if (nameParts.length === 1) {
       initials = nameParts[0][0];
     }
+  } else if (email) {
+    // If no name, use email prefix
+    initials = email[0].toUpperCase();
   }
 
   let avatarSize = {};
@@ -63,10 +66,10 @@ function stringAvatar(name, size) {
       color: 'white',
       /*border: 1,
       borderColor: 'white',*/
-      bgcolor: stringToColor(name),
+      bgcolor: stringToColor(name || email || 'unknown'),
       ...avatarSize,
     },
-    children: initials,
+    children: initials || <PersonIcon fontSize="small" />,
   };
 }
 
@@ -115,7 +118,7 @@ const AccountAvatar = ({ users, size, displayPopper=true }) => {
     const avatars = users.map((user, index) => (
       <Avatar
         key={index}
-        {...stringAvatar(user && user?.firstName ? user?.firstName : '', size)}
+        {...stringAvatar(user?.firstName || user?.lastName || '', user?.email || '', size)}
         onMouseEnter={(event) => handlePopoverOpen(event, user)}
         onMouseLeave={handlePopoverClose}
       />
@@ -137,7 +140,7 @@ const AccountAvatar = ({ users, size, displayPopper=true }) => {
             <Paper sx={{ padding: 1.5, borderRadius: 2, boxShadow: 3, maxWidth: 300 }}>
               {hoveredUser && (
                 <Box display="flex" alignItems="center" p={1}>
-                  <Avatar {...stringAvatar(hoveredUser.firstName, 'large')} />
+                  <Avatar {...stringAvatar(hoveredUser.firstName || hoveredUser.lastName || '', hoveredUser.email || '', 'large')} />
                   <Box ml={2}>
                     <Typography variant="body1">{`${hoveredUser.firstName} ${hoveredUser.lastName}`}</Typography>
                     <Typography variant="body2" color='#777'>{hoveredUser.jobTitle}</Typography>
@@ -194,7 +197,7 @@ const AccountAvatar = ({ users, size, displayPopper=true }) => {
     return (
       <>
         <Avatar
-          {...stringAvatar(user && user.firstName ? user.firstName : '', size)}
+          {...stringAvatar(user?.firstName || user?.lastName || '', user?.email || '', size)}
           onMouseEnter={(event) => handlePopoverOpen(event, user)}
           onMouseLeave={handlePopoverClose}
         >
@@ -213,7 +216,7 @@ const AccountAvatar = ({ users, size, displayPopper=true }) => {
             <Paper sx={{ padding: 1.5, borderRadius: 2, boxShadow: 3, maxWidth: 300 }}>
               {hoveredUser && (
                 <Box display="flex" alignItems="center" p={1}>
-                  <Avatar {...stringAvatar(hoveredUser.firstName, 'large')} />
+                  <Avatar {...stringAvatar(hoveredUser.firstName || hoveredUser.lastName || '', hoveredUser.email || '', 'large')} />
                   <Box ml={2}>
                     <Typography variant="body1">{`${hoveredUser.firstName} ${hoveredUser.lastName}`}</Typography>
                     <Typography variant="body2" color='#777'>{hoveredUser.jobTitle}</Typography>
