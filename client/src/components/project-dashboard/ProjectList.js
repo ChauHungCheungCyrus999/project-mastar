@@ -60,10 +60,18 @@ const ProjectList = ({
     );
   });
 
+  // Projects accessible to the current user (either admin or a team member)
+  const accessibleProjects = projects.filter((project) => {
+    const isTeamMember = project.teamMembers?.some(
+      (member) => member._id === user._id
+    );
+    return user.email === process.env.REACT_APP_ADMIN_EMAIL || isTeamMember;
+  });
+
   // Function to handle Excel export
   const handleExportReport = () => {
     // Prepare data for Excel
-    const data = projects.map((project) => {
+    const data = accessibleProjects.map((project) => {
       const completionPercentage =
         project.totalTasks === 0
           ? 0
@@ -81,24 +89,24 @@ const ProjectList = ({
     });
   
     // Calculate totals and average completion rate
-    const totalTasksCompleted = projects.reduce(
+    const totalTasksCompleted = accessibleProjects.reduce(
       (sum, project) => sum + project.completedTasks,
       0
     );
-    const totalTasks = projects.reduce(
+    const totalTasks = accessibleProjects.reduce(
       (sum, project) => sum + project.totalTasks,
       0
     );
     const averageCompletionRate =
-      projects.length > 0
+      accessibleProjects.length > 0
         ? (
-            projects.reduce((sum, project) => {
+            accessibleProjects.reduce((sum, project) => {
               const rate =
                 project.totalTasks === 0
                   ? 0
                   : (project.completedTasks / project.totalTasks) * 100;
               return sum + rate;
-            }, 0) / projects.length
+            }, 0) / accessibleProjects.length
           ).toFixed(2)
         : 0;
   
@@ -186,7 +194,7 @@ const ProjectList = ({
           cardId="Projects"
           displayMenu={true} // Enable menu for export functionality
           title={t('projectList')}
-          subheader={t('numOfProjects') + t('colon') + projects.length}
+          subheader={t('numOfProjects') + t('colon') + accessibleProjects.length}
           description={t('projectListDesc')}
           height={400}
           icon={Folder}
@@ -230,7 +238,7 @@ const ProjectList = ({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {projects.map((project, index) => {
+                {accessibleProjects.map((project, index) => {
                   const userRole = project.teamMembers?.find(
                     (member) => member._id === user._id
                   )?.role;

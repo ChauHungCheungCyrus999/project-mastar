@@ -4,9 +4,9 @@ import { FormControl, InputLabel, Select, MenuItem, OutlinedInput, Box, Chip, Li
 import axios from 'axios';
 import AccountAvatar from '../AccountAvatar';
 
-const TeamMemberSelector = ({ label, personInCharge = [], setPersonInCharge, disabled=false }) => {
+const TeamMemberSelector = ({ label, personInCharge = [], setPersonInCharge, disabled=false, projectId: propProjectId }) => {
   const { t } = useTranslation();
-  const projectId = window.location.href.split("/")[4] ;
+  const projectId = propProjectId !== undefined ? propProjectId : window.location.href.split("/")[4];
   const [options, setOptions] = useState([]);
   const [selectedValues, setSelectedValues] = useState([]);
 
@@ -15,12 +15,6 @@ const TeamMemberSelector = ({ label, personInCharge = [], setPersonInCharge, dis
       try {
         const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/project/${projectId}`);
         setOptions(response.data.teamMembers);
-
-        // Initialize selectedValues based on personInCharge
-        if (personInCharge.length > 0) {
-          const initialSelectedValues = personInCharge.map(person => person?._id);
-          setSelectedValues(initialSelectedValues);
-        }
       } catch (error) {
         console.error('Error fetching team members:', error);
       }
@@ -33,15 +27,15 @@ const TeamMemberSelector = ({ label, personInCharge = [], setPersonInCharge, dis
       } catch (error) {
         console.error('Error fetching project:', error);
       }
-    };  
+    };
 
-    if (projectId !== 'undefined') {
+    if (projectId && projectId !== 'undefined') {
       fetchTeamMembers();
     }
     else {
       fetchUsers();
     }
-  }, [projectId]);
+  }, [propProjectId]);
 
   const handleSelectChange = (event) => {
     const value = event.target.value;

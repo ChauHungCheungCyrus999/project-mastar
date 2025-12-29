@@ -73,14 +73,28 @@ const TaskEditForm = ({ taskId, mode, open, handleClose, handleSave, handleDupli
     const fetchTask = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/task/${taskId}`);
-        setEditedTask(response.data);
-        setDisabled(response.data.createdBy._id !== user._id && user.email !== process.env.REACT_APP_ADMIN_EMAIL);
+        const data = response.data;
+        setEditedTask(data);
+        // Populate local form states so child components receive the correct data
+        setDisabled(data.createdBy._id !== user._id && user.email !== process.env.REACT_APP_ADMIN_EMAIL);
+        setPersonInCharge(data.personInCharge || []);
+        setTags(data.tags || []);
+        setMilestone(data.milestone || null);
+        setStartDate(data.startDate ? dayjs(data.startDate) : null);
+        setEndDate(data.endDate ? dayjs(data.endDate) : null);
+        setActualStartDate(data.actualStartDate ? dayjs(data.actualStartDate) : null);
+        setActualEndDate(data.actualEndDate ? dayjs(data.actualEndDate) : null);
+        setAttachments(data.attachments || []);
+        setComments(data.comments || []);
+        setCreatedBy(data.createdBy || null);
+        setUpdatedBy(data.updatedBy || null);
+        setSelectedProject(data.project || null);
       } catch (error) {
         console.error('Error fetching task:', error);
       }
     };
 
-    fetchTask();
+    if (taskId) fetchTask();
   }, [taskId]);
 
   const handleTabChange = (event, newValue) => {
@@ -596,9 +610,9 @@ const TaskEditForm = ({ taskId, mode, open, handleClose, handleSave, handleDupli
 
                 <TeamMemberSelector
                   label={t('personInCharge')}
-                  personInCharge={editedTask.personInCharge}
+                  personInCharge={personInCharge}
                   setPersonInCharge={setPersonInCharge}
-                  onChange={handlePersonInChargeChange}
+                  projectId={editedTask.project?._id}
                   disabled={disabled}
                 />
                 {/*{teamMemberOptions.map((name) => (
