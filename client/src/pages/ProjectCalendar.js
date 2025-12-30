@@ -82,8 +82,8 @@ const ProjectCalendar = () => {
   const [selectedEventForPopper, setSelectedEventForPopper] = useState(null);
   const [popperOpen, setPopperOpen] = useState(false);
 
-  const handleMouseEnter = (info) => {
-    setPopperAnchorEl(info.el);
+  const handleMouseEnter = (info, event) => {
+    setPopperAnchorEl(event.currentTarget);
     setSelectedEventForPopper(info.event.extendedProps.event);
     setPopperOpen(true);
   };
@@ -96,8 +96,9 @@ const ProjectCalendar = () => {
   const renderEventContent = (eventInfo) => {
     return (
       <div
-        onMouseEnter={() => handleMouseEnter(eventInfo)}
+        onMouseEnter={(e) => handleMouseEnter(eventInfo, e)}
         onMouseLeave={handleMouseLeave}
+        style={{ cursor: 'pointer' }}
       >
         <b>{eventInfo.timeText}</b>
         <i>{eventInfo.event.title}</i>
@@ -238,7 +239,7 @@ const ProjectCalendar = () => {
       )
     );
 
-    // Update eventUpdates state
+    // Track pending updates for Save
     setEventUpdates((prev) => {
       const existingUpdate = prev.find((u) => u.id === updatedEvent.id);
       return existingUpdate
@@ -329,7 +330,7 @@ const ProjectCalendar = () => {
       const isRecurring = event.recurrence !== 'None';
       const rrule = event ? getRRule(event) : null; // Add check to ensure event is defined
   
-      return {
+      const calendarEvent = {
         id: event._id,
         title: event.title,
         start: startStr,
@@ -340,6 +341,13 @@ const ProjectCalendar = () => {
         extendedProps: { event },
         rrule: isRecurring ? rrule : null,
       };
+
+      // Only set groupId for recurring events to group instances together
+      if (isRecurring && event.groupId) {
+        calendarEvent.groupId = event.groupId;
+      }
+
+      return calendarEvent;
     }
     return null; // Return null if the event doesn't meet the criteria
   }).filter(event => event !== null); // Filter out null values  
@@ -381,6 +389,12 @@ const ProjectCalendar = () => {
   const handleSaveEvent = async (updatedEvent) => {
     try {
       const response = await axios.put(`${process.env.REACT_APP_SERVER_HOST}/api/event/${updatedEvent._id}`, updatedEvent);
+      
+      // Update event in local state
+      setEvents((prevEvents) =>
+        prevEvents.map(event => event._id === updatedEvent._id ? response.data : event)
+      );
+      
       return response.data;
     } catch (error) {
       console.error('Error updating event:', error);
@@ -391,6 +405,10 @@ const ProjectCalendar = () => {
   const onConfirmDelete = async () => {
     try {
       const response = await axios.delete(`${process.env.REACT_APP_SERVER_HOST}/api/event/${selectedEvent._id}`, selectedEvent);
+      
+      // Remove event from local state
+      setEvents((prevEvents) => prevEvents.filter(event => event._id !== selectedEvent._id));
+      
       alertRef.current.displayAlert('success', t('deleteSuccess'));
       setOpenConfirmDeleteDialog(false);
       setEditDialogOpen(false);

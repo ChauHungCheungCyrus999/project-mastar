@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { useMediaQuery, Stack, Avatar, MenuItem, Select } from '@mui/material';
 import Folder from '@mui/icons-material/Folder';
@@ -10,9 +10,11 @@ import ProjectFolder from '../ProjectFolder';
 import { useTranslation } from 'react-i18next';
 
 import hexToRGB from '../../utils/ColorUtils.js';
+import UserContext from '../../UserContext';
 
 const ProjectSwitcher = () => {
   const { t } = useTranslation();
+  const { user } = useContext(UserContext);
 
   const page = window.location.href.split("/")[5];
   const projectId = window.location.href.split("/")[4];
@@ -26,10 +28,20 @@ const ProjectSwitcher = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/projects`)
-      .then(response => setProjects(response.data))
-      .catch(error => console.error('Error fetching projects:', error));
-  }, []);
+    if (user) {
+      if (user.email === process.env.REACT_APP_ADMIN_EMAIL) {
+        // Admin can see all projects
+        axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/projects`)
+          .then(response => setProjects(response.data))
+          .catch(error => console.error('Error fetching projects:', error));
+      } else if (user._id) {
+        // Regular users only see projects they're members of
+        axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/user/${user._id}/projects`)
+          .then(response => setProjects(response.data))
+          .catch(error => console.error('Error fetching user projects:', error));
+      }
+    }
+  }, [user]);
 
   useEffect(() => {
     setSelectedProject(projectId);

@@ -150,6 +150,27 @@ const TaskProgress = () => {
         }
       });
 
+      socket.on('taskCreated', (data) => {
+        console.log('Task created:', data);
+        if (data.project === projectId) {
+          setTasks((prevTasks) => [...prevTasks, data.task]);
+        }
+      });
+
+      socket.on('taskUpdated', (data) => {
+        console.log('Task updated:', data);
+        if (data.task.project === projectId) {
+          setTasks((prevTasks) =>
+            prevTasks.map((task) => (task._id === data.task._id ? data.task : task))
+          );
+        }
+      });
+
+      socket.on('taskDeleted', (data) => {
+        console.log('Task deleted:', data);
+        setTasks((prevTasks) => prevTasks.filter((task) => task._id !== data.taskId));
+      });
+
       return () => {
         socket.disconnect();
       };
@@ -546,7 +567,7 @@ const TaskProgress = () => {
     <MainContent pageTitle={t('progress')} breadcrumbItems={breadcrumbItems}>
       {project && (
         <>
-          {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "createTask") ? (
+          {user.email === process.env.REACT_APP_ADMIN_EMAIL || (user?.permissions?.some(permission => permission === "createTask") && user?.role !== "Stakeholder") ? (
             <CreateTaskBtn setTasks={setTasks} />
           ) : null}
 

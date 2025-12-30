@@ -147,17 +147,17 @@ const TaskDashboard = () => {
 
               <Box maxWidth="100%" sx={{ mt: 2, mb: 2 }}>
                 <Grid container spacing={2}>
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readProjectDuration") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readProjectDuration") ? (
                     <Grid item xs={12} md={4} lg={3}>
                       <ProjectDuration project={project} tasks={tasks} />
                     </Grid>
                   ) : null}
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readTaskCompletionRate") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readTaskCompletionRate") ? (
                     <Grid item xs={12} md={4} lg={3}>
                       <TaskCompletionRate project={project} tasks={tasks} setTasks={setTasks} />
                     </Grid>
                   ) : null}
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readTaskVelocity") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readTaskVelocity") ? (
                     <Grid item xs={12} md={4} lg={3}>
                       <TaskVelocity project={project} tasks={tasks} />
                     </Grid>
@@ -165,7 +165,7 @@ const TaskDashboard = () => {
                 </Grid>
               </Box>
 
-              {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readDistribution") ? (
+              {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readDistribution") ? (
                 <Box maxWidth="100%" sx={{ mt: 2, mb: 2 }}>
                   <Grid container spacing={2}>
                     <Grid item xs={12} md={4} lg={3}>
@@ -206,13 +206,13 @@ const TaskDashboard = () => {
                 <Box maxWidth="100%" sx={{ mt: 2, mb: 2 }}>
                   <Grid container spacing={2}>
                     {(user.email === process.env.REACT_APP_ADMIN_EMAIL || 
-                      user?.role?.permissions?.some(permission => permission.name === "readMilestoneOverview")) && (
+                      user?.permissions?.some(permission => permission === "readMilestoneOverview")) && (
                       <Grid item xs={12} md={6} lg={6}>
                         <MilestoneOverview project={project} tasks={tasks} />
                       </Grid>
                     )}
                     {(user.email === process.env.REACT_APP_ADMIN_EMAIL || 
-                      user?.role?.permissions?.some(permission => permission.name === "readMilestoneStatusDistribution")) && (
+                      user?.permissions?.some(permission => permission === "readMilestoneStatusDistribution")) && (
                       <Grid item xs={12} md={6} lg={6}>
                         <MilestoneStatusDistribution project={project} setTasks={setTasks} />
                       </Grid>
@@ -223,12 +223,12 @@ const TaskDashboard = () => {
 
               <Box maxWidth="100%" sx={{ mt: 2, mb: 2 }}>
                 <Grid container spacing={2}>
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readBurnDownChart") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readBurnDownChart") ? (
                     <Grid item xs={12} md={12} lg={6}>
                       <BurnDownChart project={project} tasks={tasks} setTasks={setTasks} />
                     </Grid>
                   ) : null}
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readTaskCompletionTrend") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readTaskCompletionTrend") ? (
                     <Grid item xs={12} md={12} lg={6}>
                       <TaskCompletionTrend project={project} />
                     </Grid>
@@ -238,12 +238,12 @@ const TaskDashboard = () => {
               
               <Box maxWidth="100%" sx={{ mt: 2, mb: 2 }}>
                 <Grid container spacing={2}>
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readTagDistribution") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readTagDistribution") ? (
                     <Grid item xs={12} md={6} lg={6}>
                       <TagDistribution project={project} />
                     </Grid>
                   ) : null}
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readTeamPerformance") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readTeamPerformance") ? (
                     <Grid item xs={12} md={6} lg={6}>
                       <TeamPerformance project={project} tasks={tasks} setTasks={setTasks} />
                     </Grid>
@@ -259,13 +259,13 @@ const TaskDashboard = () => {
                     </Grid>
                   ) : null}*/}
 
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readUpcomingTasks") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readUpcomingTasks") ? (
                     <Grid item xs={12} md={6} lg={6}>
                       <UpcomingTasks project={project} tasks={tasks} setTasks={setTasks} />
                     </Grid>
                   ) : null}
 
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readOverdueTasks") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readOverdueTasks") ? (
                     <Grid item xs={12} md={6} lg={6}>
                       <OverdueTasks project={project} tasks={tasks} setTasks={setTasks} />
                     </Grid>
@@ -292,7 +292,7 @@ const TaskDashboard = () => {
                 </Grid>
               )}*/}
 
-              {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "createTask") ? (
+              {user.email === process.env.REACT_APP_ADMIN_EMAIL || (user?.permissions?.some(permission => permission === "createTask") && user?.role !== "Stakeholder") ? (
                 <CreateTaskBtn setTasks={setTasks} />
               ) : null}
             </>

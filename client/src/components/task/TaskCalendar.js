@@ -48,23 +48,24 @@ const TaskCalendar = ({ project, tasks, setTasks }) => {
   const [selectedTaskForPopper, setSelectedTaskForPopper] = useState(null);
   const [popperOpen, setPopperOpen] = useState(false);
 
-  const handleMouseEnter = (info) => {
+  // Use FullCalendar's eventMouseEnter/eventMouseLeave so we receive the event DOM element
+  const handleEventMouseEnter = (info) => {
+    // info.el is the event's DOM element provided by FullCalendar
     setPopperAnchorEl(info.el);
     setSelectedTaskForPopper(info.event.extendedProps.task);
     setPopperOpen(true);
   };
-  
-  const handleMouseLeave = () => {
+
+  const handleEventMouseLeave = () => {
     setPopperOpen(false);
     setSelectedTaskForPopper(null);
+    setPopperAnchorEl(null);
   };
 
   const renderEventContent = (eventInfo) => {
+    // Pure render; hover handling comes from FullCalendar's eventMouseEnter/Leave
     return (
-      <div
-        onMouseEnter={() => handleMouseEnter(eventInfo)}
-        onMouseLeave={handleMouseLeave}
-      >
+      <div>
         <b>{eventInfo.timeText}</b>
         <i>{eventInfo.event.title}</i>
       </div>
@@ -128,7 +129,7 @@ const TaskCalendar = ({ project, tasks, setTasks }) => {
     if (tasksForDate.length > 0) {
       setSelectedTasks(tasksForDate);
       setDialogOpen(true);
-    } else {
+    } else if (user?.role !== "Stakeholder") {
       setCreateFormOpen(true);
     }
   };
@@ -309,6 +310,8 @@ const TaskCalendar = ({ project, tasks, setTasks }) => {
         eventClick={handleEventClick}
         eventDrop={handleEventDrop}
         eventResize={handleEventResize}
+        eventMouseEnter={handleEventMouseEnter}
+        eventMouseLeave={handleEventMouseLeave}
         headerToolbar={{
           start: 'prevYear,prev,today,next,nextYear',
           center: 'title',

@@ -168,14 +168,14 @@ const Team = () => {
                 </Grid>
 
                 <Grid item xs={10}>
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readContactInfo") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readContactInfo") ? (
                     <Box p={2}>
                       <Typography component="h1" variant='subtitle2'>{t('contactInfo')}</Typography>
                       <ContactInfo selectedTeamMember={selectedTeamMember} />
                     </Box>
                   ) : null}
                   
-                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.role?.permissions?.some(permission => permission.name === "readStatistics") ? (
+                  {user.email === process.env.REACT_APP_ADMIN_EMAIL || user?.permissions?.some(permission => permission === "readStatistics") ? (
                     <>
                       <Box p={2}>
                         <Typography component="h1" variant='body1'>{t('statistics')}</Typography>

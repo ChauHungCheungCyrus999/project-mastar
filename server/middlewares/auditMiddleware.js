@@ -1,6 +1,7 @@
 const AuditLog = require('../models/auditLog');
+const bcrypt = require('bcrypt');
 
-function auditMiddleware(req, res, next) {
+async function auditMiddleware(req, res, next) {
   let action;
 
   // Determine the action based on the HTTP method or a custom field
@@ -30,23 +31,36 @@ function auditMiddleware(req, res, next) {
 
   const { userId } = req;
 
+  // Sanitize and encrypt sensitive data
+  const sanitizedRequestData = { ...req.body };
+  if (sanitizedRequestData.password) {
+    sanitizedRequestData.password = await bcrypt.hash(sanitizedRequestData.password, 10); // Hash password like in database
+  }
+  if (sanitizedRequestData.currentPassword) {
+    sanitizedRequestData.currentPassword = await bcrypt.hash(sanitizedRequestData.currentPassword, 10);
+  }
+  if (sanitizedRequestData.newPassword) {
+    sanitizedRequestData.newPassword = await bcrypt.hash(sanitizedRequestData.newPassword, 10);
+  }
+
   const auditLogEntry = new AuditLog({
     action,
     timestamp: new Date(),
     userId,
     ipAddress: req.ip,
     requestUrl: req.originalUrl,
-    requestData: req.body,
+    requestData: sanitizedRequestData,
     responseStatus: res.statusCode,
     responseData: res.locals.data,
   });
 
-  auditLogEntry.save()
-    .then(() => next())
-    .catch((error) => {
-      console.error('Error saving audit log:', error);
-      next(error); // Pass the error to the error handling middleware
-    });
+  try {
+    await auditLogEntry.save();
+    next();
+  } catch (error) {
+    console.error('Error saving audit log:', error);
+    next(error);
+  }
 }
 
 module.exports = auditMiddleware;

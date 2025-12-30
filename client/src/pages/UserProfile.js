@@ -93,7 +93,7 @@ const UserProfile = () => {
     <MainContent pageTitle="userProfile" breadcrumbItems={breadcrumbItems}>
       {(
         user.email === process.env.REACT_APP_ADMIN_EMAIL ||
-        user?.role?.permissions?.some(permission => permission.name === "readUserProfileContactInfo") ||
+        user?.permissions?.some(permission => permission === "readUserProfileContactInfo") ||
         selectedUser
       ) ? (
         <>
