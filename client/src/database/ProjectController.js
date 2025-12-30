@@ -14,7 +14,7 @@ export const fetchProjects = async () => {
 export const fetchProject = async (projectId) => {
   try {
     const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/project/${projectId}`);
-    return response.json();
+    return response.data;
   } catch (error) {
     console.error('Error fetching project:', error);
   }

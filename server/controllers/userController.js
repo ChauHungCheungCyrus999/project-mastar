@@ -96,10 +96,7 @@ exports.register = async (req, res) => {
           active: req.body.active,
         });
         const savedUser = await newUser.save();
-        res.status(200).json({
-          title: "Registered Successfully!",
-          status: true,
-        });
+        res.status(200).json(savedUser);
       } else {
         res.status(400).json({
           errorMessage: `Username ${req.body.username} Already Exist!`,
@@ -233,36 +230,49 @@ exports.getUsersBySearch = async (req, res) => {
 };
 
 // Update a user by ID
-exports.updateUser = (req, res) => {
-  const userId = req.params.id;
-  const userData = req.body;
-  User.findByIdAndUpdate(userId, userData, { new: true })
-    .then(user => {
-      if (user) {
-        res.status(200).json(user);
-      } else {
-        res.status(404).json({ error: 'User not found' });
-      }
-    })
-    .catch(error => {
-      res.status(500).json({ error: 'Failed to update user' });
-    });
+exports.updateUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const userData = req.body;
+
+    // If password is provided, hash it
+    if (userData.password) {
+      userData.password = await bcrypt.hash(userData.password, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(userId, userData, { new: true });
+    if (user) {
+      res.status(200).json(user);
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user' });
+  }
 };
 
 // Get a user's projects
 exports.getUserProjects = async (req, res) => {
   try {
     const userId = req.params.id;
+    console.log('Fetching projects for userId:', userId);
 
     // Find the user by _id
     const user = await User.findById(userId);
+    console.log('User found:', user ? user.email : 'not found');
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Find projects where the user is a team member and populate teamMembers
-    const projects = await Project.find({ 'teamMembers._id': userId })
+    // Check if user is admin
+    const isAdmin = user.email === process.env.ADMIN_EMAIL;
+    console.log('Is admin:', isAdmin);
+
+    // Find projects: all for admin, or where user is team member
+    const query = isAdmin ? {} : { 'teamMembers._id': userId };
+    console.log('Query:', query);
+    const projects = await Project.find(query)
       .populate('createdBy', 'firstName lastName')
       .populate('updatedBy', 'firstName lastName')
       .populate({
@@ -270,45 +280,59 @@ exports.getUserProjects = async (req, res) => {
         model: 'User',
         select: 'firstName lastName gender email phone organization department jobTitle createdDate updatedDate'
       });
+    console.log('Projects found:', projects.length);
 
     // Import Task model if not already imported
     // const Task = require('../models/task');
 
-    const transformedProjects = await Promise.all(projects.map(async project => {
-      const tasks = await Task.find({ project: project._id });
-      
-      const transformedTeamMembers = project.teamMembers.map(member => {
+    const transformedProjectsRaw = await Promise.all(projects.map(async project => {
+      try {
+        console.log('Processing project:', project._id);
+        const tasks = await Task.find({ project: project._id });
+        console.log('Tasks found for project:', tasks.length);
+        
+        const transformedTeamMembers = project.teamMembers
+          .filter(member => member._id) // Filter out members without _id
+          .map(member => {
+            return {
+              _id: member._id._id,
+              firstName: member._id.firstName,
+              lastName: member._id.lastName,
+              gender: member._id.gender,
+              email: member._id.email,
+              phone: member._id.phone,
+              organization: member._id.organization,
+              department: member._id.department,
+              jobTitle: member._id.jobTitle,
+              createdDate: member._id.createdDate,
+              updatedDate: member._id.updatedDate,
+              role: member.role
+            };
+          });
+
+        const totalTasks = tasks.filter(task => task.status !== 'Cancelled').length;
+        const completedTasks = tasks.filter(task => task.status === 'Done').length;
+
         return {
-          _id: member._id._id,
-          firstName: member._id.firstName,
-          lastName: member._id.lastName,
-          gender: member._id.gender,
-          email: member._id.email,
-          phone: member._id.phone,
-          organization: member._id.organization,
-          department: member._id.department,
-          jobTitle: member._id.jobTitle,
-          createdDate: member._id.createdDate,
-          updatedDate: member._id.updatedDate,
-          role: member.role
+          _id: project._id,
+          title: project.title,
+          description: project.description,
+          teamMembers: transformedTeamMembers,
+          color: project.color,
+          createdDate: project.createdDate,
+          updatedDate: project.updatedDate,
+          createdBy: project.createdBy,
+          updatedBy: project.updatedBy,
+          totalTasks,
+          completedTasks
         };
-      });
-
-      const totalTasks = tasks.filter(task => task.status !== 'Cancelled').length;
-      const completedTasks = tasks.filter(task => task.status === 'Done').length;
-
-      return {
-        _id: project._id,
-        title: project.title,
-        description: project.description,
-        teamMembers: transformedTeamMembers,
-        color: project.color,
-        createdDate: project.createdDate,
-        updatedDate: project.updatedDate,
-        totalTasks,
-        completedTasks
-      };
+      } catch (err) {
+        console.error('Error processing project:', project._id, err);
+        return null; // Return null for failed projects
+      }
     }));
+
+    const transformedProjects = transformedProjectsRaw.filter(result => result !== null);
 
     res.json(transformedProjects);
   } catch (err) {
@@ -339,3 +363,42 @@ exports.getUserProjects = async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch user projects and tasks' });
     });
 };*/
+
+// Delete user
+exports.deleteUser = async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    const user = await User.findByIdAndDelete(userId);
+
+    if (user) {
+      // Optionally, remove the user from all projects' teamMembers
+      try {
+        await Project.updateMany(
+          { teamMembers: userId },
+          { $pull: { teamMembers: userId } }
+        );
+      } catch (updateError) {
+        console.error('Error updating projects:', updateError);
+      }
+
+      // Optionally, delete or reassign tasks assigned to this user
+      // For simplicity, just remove the assignee
+      try {
+        await Task.updateMany(
+          { assignee: userId },
+          { $unset: { assignee: '' } }
+        );
+      } catch (updateError) {
+        console.error('Error updating tasks:', updateError);
+      }
+
+      res.status(200).json({ message: 'User deleted successfully' });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
+  } catch (error) {
+    console.error('Failed to delete user:', error);
+    res.status(500).json({ error: 'Failed to delete user' });
+  }
+};

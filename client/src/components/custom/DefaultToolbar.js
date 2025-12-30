@@ -20,13 +20,19 @@ import { useTranslation } from 'react-i18next';
 function DefaultToolbar(props) {
   const { t } = useTranslation();
 
-  const {rows, setRows, setRowModesModel, columns, createRowData } = props;
+  const {rows, setRows, setRowModesModel, columns, createRowData, onAddClick } = props;
 
   const handleClick = () => {
+    if (onAddClick) {
+      onAddClick();
+      return;
+    }
     const newData = createRowData(rows);
     newData.isNew = true;
-    if(!newData.hasOwnProperty("id"))
-      newData.newId = Math.max(...rows.map((r)=>r.id * 1)) + 1;
+    if(!newData.hasOwnProperty("id")) {
+      const maxId = rows.length > 0 ? Math.max(...rows.map((r) => parseInt(r.id) || 0)) : 0;
+      newData.id = (maxId + 1).toString();
+    }
     setRows((oldRows) => {
       return [...oldRows, newData]
     });

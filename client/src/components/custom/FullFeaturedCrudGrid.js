@@ -15,7 +15,7 @@ import DefaultToolbar from "./DefaultToolbar";
 
 import { useTranslation } from 'react-i18next';
 
-function FullFeaturedCrudGrid({ columns, rows, defaultPageSize, onSaveRow, onDeleteRow, createRowData, noActionColumn, onProcessRowUpdateError, ...props }) {
+function FullFeaturedCrudGrid({ columns, rows, defaultPageSize, onSaveRow, onDeleteRow, createRowData, noActionColumn, onProcessRowUpdateError, onAddClick, onEditClick, ...props }) {
   const { t, i18n } = useTranslation();
   let locale = null;
   if (i18n.language === 'zh-cn') {
@@ -25,60 +25,17 @@ function FullFeaturedCrudGrid({ columns, rows, defaultPageSize, onSaveRow, onDel
   }
 
   const [internalRows, setInternalRows] = useState(rows);
-  const [rowModesModel, setRowModesModel] = useState(
-    {}
-  );
 
   useEffect(()=>{
     setInternalRows(rows);
   }, [rows]);
 
-  const handleRowEditStart = (
-    params,
-    event
-  ) => {
-    event.defaultMuiPrevented = true;
-  };
-
-  const handleRowEditStop = (
-    params,
-    event
-  ) => {
-    event.defaultMuiPrevented = true;
-  };
-
   const handleEditClick = (id) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-  };
-
-  const handleSaveClick = (id) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
+    if (onEditClick) onEditClick(id);
   };
 
   const handleDeleteClick = (id) => () => {
-    setInternalRows(internalRows.filter((row) => row.id !== id));
     onDeleteRow(id, internalRows.find((row) => row.id === id), internalRows);
-  };
-
-  const handleCancelClick = (id) => () => {
-    setRowModesModel({
-      ...rowModesModel,
-      [id]: { mode: GridRowModes.View, ignoreModifications: true }
-    });
-
-    const editedRow = internalRows.find((row) => row.id === id);
-    if (editedRow.isNew) {
-      setInternalRows(internalRows.filter((row) => row.id !== id));
-    }
-  };
-
-  const processRowUpdate = (newRow) => {
-    const updatedRow = { ...newRow};
-    if(!updatedRow.isNew) updatedRow.isNew = false;
-    const oldRow = internalRows.find((r)=>r.id === updatedRow.id);
-    setInternalRows(internalRows.map((row) => (row.id === newRow.id ? updatedRow : row)));
-    onSaveRow(updatedRow.id, updatedRow, oldRow, internalRows);
-    return updatedRow;
   };
 
   const appendedColumns = noActionColumn ? columns : [
@@ -90,30 +47,6 @@ function FullFeaturedCrudGrid({ columns, rows, defaultPageSize, onSaveRow, onDel
       width: 100,
       cellClassName: "actions",
       getActions: ({ id }) => {
-        const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
-
-        if (isInEditMode) {
-          return [
-            <Tooltip title={t('save')}>
-              <GridActionsCellItem
-                icon={<SaveIcon />}
-                label={t('save')}
-                onClick={handleSaveClick(id)}
-              />
-            </Tooltip>
-            ,
-            <Tooltip title={t('cancel')}>
-              <GridActionsCellItem
-                icon={<CancelIcon />}
-                label={t('cancel')}
-                className="textPrimary"
-                onClick={handleCancelClick(id)}
-                color="inherit"
-              />
-            </Tooltip>
-          ];
-        }
-
         return [
           <Tooltip title={t('edit')}>
             <GridActionsCellItem
@@ -145,24 +78,17 @@ function FullFeaturedCrudGrid({ columns, rows, defaultPageSize, onSaveRow, onDel
     <DataGrid
       rows={internalRows}
       columns={appendedColumns}
-      editMode="row"
-      rowModesModel={rowModesModel}
-      onRowModesModelChange={(newModel) => setRowModesModel(newModel)}
-      onRowEditStart={handleRowEditStart}
-      onRowEditStop={handleRowEditStop}
-      processRowUpdate={processRowUpdate}
       onProcessRowUpdateError={onProcessRowUpdateError}
       slots={{
         toolbar: DefaultToolbar,
       }}
       slotProps={{
-        toolbar: { rows: internalRows, setRows: setInternalRows, setRowModesModel, createRowData, columns },
+        toolbar: { rows: internalRows, setRows: setInternalRows, createRowData, columns, onAddClick },
         loadingOverlay: {
           variant: 'skeleton',
           noRowsVariant: 'skeleton',
         },
       }}
-      experimentalFeatures={{ newEditingApi: true }}
 
       //pagination
       pageSize={pageSize}

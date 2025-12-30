@@ -385,7 +385,7 @@ const ProjectEditForm = ({ project, open, handleClose, handleSave }) => {
                 <TextField
                   label={t('createdBy')}
                   name="createdBy"
-                  value={editedProject.createdBy.firstName + ' ' + editedProject.createdBy.lastName}
+                  value={editedProject.createdBy ? editedProject.createdBy.firstName + ' ' + editedProject.createdBy.lastName : 'Unknown'}
                   fullWidth
                   margin="dense"
                   size="small"
@@ -394,7 +394,7 @@ const ProjectEditForm = ({ project, open, handleClose, handleSave }) => {
                 <TextField
                   label={t('updatedBy')}
                   name="updatedBy"
-                  value={editedProject.updatedBy.firstName + ' ' + editedProject.updatedBy.lastName}
+                  value={editedProject.updatedBy ? editedProject.updatedBy.firstName + ' ' + editedProject.updatedBy.lastName : 'Unknown'}
                   fullWidth
                   margin="dense"
                   size="small"

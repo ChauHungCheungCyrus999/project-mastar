@@ -60,16 +60,9 @@ const ProjectDashboard = () => {
 
   const fetchProjects = async () => {
     try {
-      if (user) {
-        if (user.email === process.env.REACT_APP_ADMIN_EMAIL) {
-          // Admin can see all projects
-          const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/projects`);
-          setProjects(response.data);
-        } else if (user._id) {
-          // Regular users only see projects they're members of
-          const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/user/${user._id}/projects`);
-          setProjects(response.data);
-        }
+      if (user && user._id) {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/user/${user._id}/projects`);
+        setProjects(response.data);
       }
       setIsLoading(false);
     } catch (error) {
@@ -86,8 +79,9 @@ const ProjectDashboard = () => {
     handleCreate(newProject, setProjects);
   };
 
-  const onSaveProject = (updatedProject) => {
-    handleSaveProject(updatedProject, projects, setProjects);
+  const onSaveProject = async (updatedProject) => {
+    await handleSaveProject(updatedProject, projects, setProjects);
+    fetchProjects();
   };
 
   const onConfirmDelete = (projectId) => {

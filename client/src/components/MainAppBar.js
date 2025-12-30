@@ -97,8 +97,12 @@ function MainAppBar({ mode, setMode, setTheme, setAuthenticated, children }) {
   const [projects, setProjects] = useState([]);
   const fetchProjects = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/projects`);
-      setProjects(response.data);
+      console.log('user.email:', user?.email);
+      console.log('admin email:', process.env.REACT_APP_ADMIN_EMAIL);
+      if (user && user._id) {
+        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/user/${user._id}/projects`);
+        setProjects(response.data);
+      }
     } catch (error) {
       console.error('Error fetching projects:', error);
     }

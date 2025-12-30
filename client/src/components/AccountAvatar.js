@@ -12,7 +12,7 @@ function stringToColor(string) {
   let i;
 
   if (!string)
-    return "#333";
+    return "#808080";
 
   for (i = 0; i < string.length; i += 1) {
     hash = string.charCodeAt(i) + ((hash << 5) - hash);
@@ -66,7 +66,7 @@ function stringAvatar(name, email, size) {
       color: 'white',
       /*border: 1,
       borderColor: 'white',*/
-      bgcolor: stringToColor(name || email || 'unknown'),
+      bgcolor: stringToColor(name || email || ''),
       ...avatarSize,
     },
     children: initials || <PersonIcon fontSize="small" />,

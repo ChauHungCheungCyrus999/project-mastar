@@ -349,6 +349,7 @@ mongoose.connect(process.env.DB_CONNECTION_URL, {
   // User routes
   app.post('/login', auditMiddleware, userController.login);
   app.post('/register', auditMiddleware, userController.register);
+  app.post('/api/users', auditMiddleware, userController.register);
   app.put('/api/user/:id/change-password', auditMiddleware, userController.changePassword);
   app.get('/api/user/:userId', auditMiddleware, userController.getUserById);
   app.get('/api/users', auditMiddleware, userController.getUsers);
@@ -357,7 +358,7 @@ mongoose.connect(process.env.DB_CONNECTION_URL, {
   app.get('/api/user/:id/projects', auditMiddleware, userController.getUserProjects);
   app.post('/api/user/store-user-profile', auditMiddleware, userProfileController.storeUserProfile);
   app.get('/api/user/retrieve-user-profile/:userId', auditMiddleware, userProfileController.retrieveUserProfile)
-  //app.delete('/api/user/:id', userController.deleteUser);
+  app.delete('/api/user/:id', auditMiddleware, userController.deleteUser);
 
   // Role routes
   app.post('/api/role', auditMiddleware, roleController.createRole);
