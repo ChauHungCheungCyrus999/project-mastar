@@ -109,7 +109,7 @@ const AnnouncementManagement = () => {
     createdDate: new Date(),
     updatedBy: user._id,
     updatedDate: new Date(),
-    project: '',  // Default to 'All' project
+    project: (projectId && projectId !== 'undefined') ? projectId : '',  // Use projectId from URL if available
   });
   
   const [content, setContent] = useState();
@@ -334,7 +334,7 @@ const AnnouncementManagement = () => {
     // If project is null, the announcement is sent to all projects/users
     try {
       const response = await axios.post(`${process.env.REACT_APP_SERVER_HOST}/api/announcement`, announcement);
-      setAnnouncements([...announcements, response.data]);
+      await fetchAnnouncements(); // Refresh the list to get properly populated data
       alertRef.current.displayAlert('success', t('createSuccess'));
     } catch (error) {
       console.error('Error creating announcement:', error);
@@ -385,7 +385,7 @@ const AnnouncementManagement = () => {
       createdDate: new Date(),
       updatedBy: user._id,
       updatedDate: new Date(),
-      project: '',  // Default to 'All' project when creating announcement
+      project: (projectId && projectId !== 'undefined') ? projectId : '',  // Use projectId from URL if available
     });
   
     setStartDate('');
@@ -410,7 +410,7 @@ const AnnouncementManagement = () => {
       createdDate: new Date(),
       updatedBy: user._id,
       updatedDate: new Date(),
-      project: '',  // Reset to 'All' project
+      project: (projectId && projectId !== 'undefined') ? projectId : '',  // Use projectId from URL if available
     });
     setStartDate('');
     setEndDate('');

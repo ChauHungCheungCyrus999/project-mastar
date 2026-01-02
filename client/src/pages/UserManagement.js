@@ -334,6 +334,7 @@ const UserManagement = () => {
                 label="Username"
                 value={newUser.username || ''}
                 onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                autoComplete="off"
               />
             </Grid>
             <Grid item xs={6}>
@@ -343,6 +344,7 @@ const UserManagement = () => {
                 label="Password"
                 value={newUser.password || ''}
                 onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                autoComplete="new-password"
               />
             </Grid>
             <Grid item xs={6}>
