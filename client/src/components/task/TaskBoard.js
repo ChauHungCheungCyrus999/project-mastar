@@ -75,13 +75,17 @@ const TaskBoard = ({ project, tasks, setTasks, showTaskDetails }) => {
   };
 
   const onConfirmDelete = () => {
-    confirmDelete(taskToDelete, setTasks, setOpenConfirmDeleteDialog)
+    confirmDelete(taskToDelete, setTasks, setOpenConfirmDeleteDialog, user)
       .then(() => {
         alertRef.current.displayAlert('success', t('deleteSuccess'));
       })
       .catch((error) => {
-        console.error('Error deleting task:', error.message);
-        alertRef.current.displayAlert('error', t('deleteFail'));
+        console.error('Error deleting task:', error);
+        if (error.response?.status === 403) {
+          alertRef.current.displayAlert('error', error.response.data.error || t('deleteFail'));
+        } else {
+          alertRef.current.displayAlert('error', t('deleteFail'));
+        }
       });
   };
 

@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -75,6 +75,16 @@ const TaskProgress = () => {
     { label: 'progress', icon: <Assignment sx={{ mr: 0.5 }} fontSize="inherit" /> },
   ];
 
+  const fetchTasks = useCallback(async () => {
+    if (!projectId) return;
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/tasks/project/${projectId}`);
+      setTasks(response.data);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  }, [projectId]);
+
   useEffect(() => {
     const fetchUserByProject = async () => {
       if (user?.email !== process.env.REACT_APP_ADMIN_EMAIL) {
@@ -111,18 +121,9 @@ const TaskProgress = () => {
       }
     };
 
-    const fetchTasks = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/tasks/project/${projectId}`);
-        setTasks(response.data);
-      } catch (error) {
-        console.error('Error fetching tasks:', error);
-      }
-    };
-
     fetchProject();
     fetchTasks();
-  }, [projectId]);
+  }, [projectId, fetchTasks]);
 
   // Socket.IO for real-time updates
   useEffect(() => {
@@ -137,15 +138,6 @@ const TaskProgress = () => {
       socket.on('taskMoved', (data) => {
         console.log('Task moved:', data);
         if (data.oldProjectId === projectId || data.newProjectId === projectId) {
-          // Refetch tasks for the current project
-          const fetchTasks = async () => {
-            try {
-              const response = await axios.get(`${process.env.REACT_APP_SERVER_HOST}/api/tasks/project/${projectId}`);
-              setTasks(response.data);
-            } catch (error) {
-              console.error('Error refetching tasks after move:', error);
-            }
-          };
           fetchTasks();
         }
       });
@@ -645,7 +637,7 @@ const TaskProgress = () => {
                         project={project}
                         tasks={sortedTasks}
                       />
-                      <ImportTasks projectId={project._id} />
+                      <ImportTasks projectId={project._id} onImported={fetchTasks} />
                     </>
                   )}
                 </Box>

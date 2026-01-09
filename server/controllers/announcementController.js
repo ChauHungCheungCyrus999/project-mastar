@@ -87,10 +87,11 @@ exports.getAllAnnouncements = async (req, res) => {
 exports.getAllAnnouncementsByUser = async (req, res) => {
   try {
     const userId = req.user._id; // Assuming the user ID is available in the request object
+    const isAdmin = req.user?.email === process.env.ADMIN_EMAIL;
 
-    const announcements = await Announcement.find({
-      visibleTo: userId, // Check if the user is in the visibleTo array
-    })
+    const filter = isAdmin ? {} : { visibleTo: userId };
+
+    const announcements = await Announcement.find(filter)
       .populate('visibleTo')
       .populate('createdBy')
       .populate('updatedBy')

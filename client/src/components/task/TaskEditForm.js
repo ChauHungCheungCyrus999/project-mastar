@@ -229,7 +229,7 @@ const TaskEditForm = ({ taskId, mode, open, handleClose, handleSave, handleDupli
   
 
   // Form Submission
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!editedTask.taskName) {
       setError(true);
       return;
@@ -268,8 +268,17 @@ const TaskEditForm = ({ taskId, mode, open, handleClose, handleSave, handleDupli
 
     if (mode == 'update' || mode == 'share') {
       console.log("Updated Task = " + JSON.stringify(updatedTask));
-      handleSave(updatedTask);
-      alertRef.current.displayAlert('success', t('saveSuccess'));
+      try {
+        await handleSave(updatedTask);
+        alertRef.current.displayAlert('success', t('saveSuccess'));
+      } catch (error) {
+        console.error('Error saving task:', error);
+        if (error.response?.status === 403) {
+          alertRef.current.displayAlert('error', error.response.data.error || t('saveFail'));
+        } else {
+          alertRef.current.displayAlert('error', t('saveFail'));
+        }
+      }
     }
     else if (mode == 'duplicate') {
       console.log("Duplicated Task = " + JSON.stringify(updatedTask));

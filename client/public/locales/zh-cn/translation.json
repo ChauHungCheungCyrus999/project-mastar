@@ -360,6 +360,8 @@
   "showTaskTable": "显示任务表",
   "duration": "持续时间",
   "manDay": "工作日",
+  "totalDuration": "总持续时间",
+  "totalManDays": "总工作日",
 
   "all": "全部",
   "taskName": "任务名称",
@@ -525,6 +527,7 @@
   "milestoneOverviewDesc": "每个里程碑的任务完成百分比",
   "numOfMilestones": "里程碑数量",
   "withoutMilestone": "沒有里程碑",
+  "noMilestone": "无里程碑",
 
   "milestoneStatusDistribution": "里程碑状态分布",
   "milestoneStatusDistributionDesc": "里程碑任务进度概览",

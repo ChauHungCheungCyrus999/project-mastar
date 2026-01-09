@@ -359,6 +359,8 @@
   "showTaskTable": "顯示任務表",
   "duration": "持續時間",
   "manDay": "工作日",
+  "totalDuration": "總持續時間",
+  "totalManDays": "總工作日",
 
   "all": "全部",
   "taskName": "任務名稱",
@@ -524,6 +526,7 @@
   "milestoneOverviewDesc": "每個里程碑中任務完成的百分比",
   "numOfMilestones": "里程碑數量",
   "withoutMilestone": "沒有里程碑",
+  "noMilestone": "無里程碑",
 
   "milestoneStatusDistribution": "里程碑狀態分佈",
   "milestoneStatusDistributionDesc": "跨里程碑的任務進度概覽",

@@ -147,6 +147,7 @@ function Navbar({ displayMenu }) {
               component="a"
               href="/login"
               //target="_blank"
+              sx={{ color: 'white' }}
             >
               {t('signIn')}
             </Button>
@@ -157,6 +158,7 @@ function Navbar({ displayMenu }) {
               component="a"
               href="/register"
               //target="_blank"
+              sx={{ color: 'white' }}
             >
               {t('signUp')}
             </Button>

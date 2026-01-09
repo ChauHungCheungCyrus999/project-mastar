@@ -358,17 +358,23 @@ exports.getUserUpcomingTasks = async (req, res) => {
   next30Days.setDate(now.getDate() + 30);
 
   try {
+    const user = await User.findById(userId);
+    const isAdmin = user?.email === process.env.ADMIN_EMAIL;
+
     // Find projects where the user is a team member
-    const accessibleProjects = await Project.find({ 'teamMembers._id': userId });
+    const accessibleProjects = isAdmin
+      ? await Project.find()
+      : await Project.find({ 'teamMembers._id': userId });
+
     if (!accessibleProjects.length) {
-      return res.status(404).json({ error: 'No accessible projects found' });
+      return res.status(200).json([]);
     }
 
     let tasks = [];
 
     for (const project of accessibleProjects) {
       const teamMember = project.teamMembers.find(member => member._id.toString() === userId);
-      const userRoleName = teamMember.role;
+      const userRoleName = isAdmin ? 'Project Manager' : teamMember?.role;
 
       if (['Project Manager', 'Stakeholder'].includes(userRoleName)) {
         // Fetch all tasks within the next 30 days for the project
@@ -427,17 +433,23 @@ exports.getUserOverdueTasks = async (req, res) => {
   const now = new Date();
 
   try {
+    const user = await User.findById(userId);
+    const isAdmin = user?.email === process.env.ADMIN_EMAIL;
+
     // Find projects where the user is a team member
-    const accessibleProjects = await Project.find({ 'teamMembers._id': userId });
+    const accessibleProjects = isAdmin
+      ? await Project.find()
+      : await Project.find({ 'teamMembers._id': userId });
+
     if (!accessibleProjects.length) {
-      return res.status(404).json({ error: 'No accessible projects found' });
+      return res.status(200).json([]);
     }
 
     let tasks = [];
 
     for (const project of accessibleProjects) {
       const teamMember = project.teamMembers.find(member => member._id.toString() === userId);
-      const userRoleName = teamMember.role;
+      const userRoleName = isAdmin ? 'Project Manager' : teamMember?.role;
 
       if (['Project Manager', 'Stakeholder'].includes(userRoleName)) {
         // Fetch all overdue tasks for the project
@@ -496,12 +508,16 @@ exports.getUserOverdueTasks = async (req, res) => {
 exports.getTaskCounts = async (req, res) => {
   const { projectId } = req.query;
   const userId = req.user._id; // Assuming `user` is added to the request through authentication middleware
+  const isAdmin = req.user?.email === process.env.ADMIN_EMAIL;
 
   try {
     // Find all accessible projects for the authenticated user
-    const accessibleProjects = await Project.find({ 'teamMembers._id': userId });
+    const accessibleProjects = isAdmin
+      ? await Project.find()
+      : await Project.find({ 'teamMembers._id': userId });
+
     if (!accessibleProjects.length) {
-      return res.status(404).json({ error: 'No accessible projects found' });
+      return res.status(200).json({ tasks: [] });
     }
 
     // Get the IDs of accessible projects
@@ -566,6 +582,11 @@ exports.updateTask = async (req, res) => {
 
     if (!existingTask) {
       return res.status(404).json({ error: 'Task not found' });
+    }
+
+    // Check if current user is the task creator
+    if (existingTask.createdBy.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'You can only edit tasks you created' });
     }
 
     // Preserve the existing comments
@@ -779,7 +800,22 @@ exports.moveTaskToAnotherProject = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const taskId = req.params.id;
-    const task = await Task.findByIdAndDelete(taskId);
+    const currentUserId = req.body.deletedBy;
+
+    // First fetch the task to check creator before deleting
+    const task = await Task.findById(taskId);
+
+    if (!task) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    // Check if current user is the task creator
+    if (task.createdBy.toString() !== currentUserId) {
+      return res.status(403).json({ error: 'You can only delete tasks you created' });
+    }
+
+    // Delete the task after authorization check
+    await Task.findByIdAndDelete(taskId);
 
     if (task) {
       // Notification

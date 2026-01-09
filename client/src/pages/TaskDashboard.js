@@ -102,6 +102,13 @@ const TaskDashboard = () => {
     }
   };
 
+  // Enhanced setTasks function that also refreshes milestones
+  const updateTasksAndRefreshMilestones = (newTasks) => {
+    setTasks(newTasks);
+    // Refresh milestones to ensure milestone tags are updated
+    fetchMilestones();
+  };
+
   return (
     <MainContent
       pageTitle={t('dashboard')}
@@ -293,7 +300,7 @@ const TaskDashboard = () => {
               )}*/}
 
               {user.email === process.env.REACT_APP_ADMIN_EMAIL || (user?.permissions?.some(permission => permission === "createTask") && user?.role !== "Stakeholder") ? (
-                <CreateTaskBtn setTasks={setTasks} />
+                <CreateTaskBtn setTasks={updateTasksAndRefreshMilestones} />
               ) : null}
             </>
           )}

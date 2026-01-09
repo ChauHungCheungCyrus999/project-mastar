@@ -7,8 +7,12 @@ import {
   Menu, MenuItem,
   FormControlLabel,
   Typography,
+  IconButton,
+  Box,
 } from '@mui/material';
 import ViewColumnIcon from '@mui/icons-material/ViewColumn';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -42,6 +46,9 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
   
   // Holiday
   const [holidays, setHolidays] = useState([]);
+
+  // Milestone collapse/expand state
+  const [collapsedMilestones, setCollapsedMilestones] = useState(new Set());
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -391,20 +398,131 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
       }
     });
 
+    // Group tasks by milestone
+    const groupedByMilestone = {};
+    sortedTasks.forEach(task => {
+      const milestoneKey = task.milestone?._id || task.milestone?.title || task.milestone?.name || 'no-milestone';
+      const milestoneName = task.milestone?.title || task.milestone?.name || (t('noMilestone') || 'No Milestone');
+      
+      if (!groupedByMilestone[milestoneKey]) {
+        groupedByMilestone[milestoneKey] = {
+          milestoneName: milestoneName,
+          tasks: []
+        };
+      }
+      groupedByMilestone[milestoneKey].tasks.push(task);
+    });
+
+    // Create flattened array with milestone headers and tasks
+    const flattenedRows = [];
+    Object.entries(groupedByMilestone).forEach(([milestoneKey, group]) => {
+      // Calculate total duration for this milestone (in days)
+      const totalDuration = group.tasks.reduce((sum, task) => {
+        if (task.startDate && task.endDate) {
+          const duration = differenceInDays(new Date(task.endDate), new Date(task.startDate)) + 1;
+          return sum + duration;
+        }
+        return sum;
+      }, 0);
+
+      // Calculate total man-days for this milestone
+      const totalManDays = group.tasks.reduce((sum, task) => {
+        if (task.startDate && task.endDate) {
+          const manDay = calculateManDay(task.startDate, task.endDate, holidays);
+          return sum + manDay;
+        }
+        return sum;
+      }, 0);
+
+      // Add milestone header row
+      flattenedRows.push({
+        isMilestoneHeader: true,
+        milestoneKey: milestoneKey,
+        milestoneName: group.milestoneName,
+        taskCount: group.tasks.length,
+        totalDuration: totalDuration,
+        totalManDays: totalManDays
+      });
+      
+      // Add all tasks for this milestone only if not collapsed
+      if (!collapsedMilestones.has(milestoneKey)) {
+        flattenedRows.push(...group.tasks);
+      }
+    });
+
     // Pagination logic
-    const totalTasks = sortedTasks.length;
-    const totalPages = Math.ceil(totalTasks / itemsPerPage);
+    const totalItems = flattenedRows.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentTasks = sortedTasks.slice(startIndex, endIndex);
+    const currentItems = flattenedRows.slice(startIndex, endIndex);
 
-    return currentTasks.map((task, index) => (
-      <TableRow key={startIndex + index} style={{ whiteSpace: 'nowrap' }} hover>
-        {sortedFilteredColumnNames.map((columnName) => {
-          const value = task[columnName];
-    
-          if (excludedColumns.includes(columnName) || !isColumnVisible(columnName))
-            return null;
+    return currentItems.map((item, index) => {
+      // Render milestone header row
+      if (item.isMilestoneHeader) {
+        const isCollapsed = collapsedMilestones.has(item.milestoneKey);
+        
+        const toggleMilestone = () => {
+          setCollapsedMilestones(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(item.milestoneKey)) {
+              newSet.delete(item.milestoneKey);
+            } else {
+              newSet.add(item.milestoneKey);
+            }
+            return newSet;
+          });
+        };
+
+        return (
+          <TableRow 
+            key={`milestone-${startIndex + index}`}
+            sx={{
+              backgroundColor: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: theme.palette.primary.dark,
+                cursor: 'pointer',
+              }
+            }}
+            onClick={toggleMilestone}
+          >
+            <TableCell 
+              colSpan={sortedFilteredColumnNames.filter(col => isColumnVisible(col)).length}
+              sx={{
+                fontWeight: 700,
+                fontSize: '1rem',
+                color: theme.palette.primary.contrastText,
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  transform: isCollapsed ? 'rotate(0deg)' : 'rotate(90deg)',
+                }}
+              >
+                <ChevronRightIcon />
+              </Box>
+              {item.milestoneName} ({item.taskCount} {item.taskCount === 1 ? (t('task') || 'task') : (t('tasks') || 'tasks')}) - {t('totalDuration') || 'Total Duration'}: {item.totalDuration} {item.totalDuration === 1 ? (t('day') || 'day') : (t('days') || 'days')} | {t('totalManDays') || 'Total Man-days'}: {item.totalManDays} {item.totalManDays === 1 ? (t('day') || 'day') : (t('days') || 'days')}
+            </TableCell>
+          </TableRow>
+        );
+      }
+
+      // Render task row
+      const task = item;
+      return (
+        <TableRow key={startIndex + index} style={{ whiteSpace: 'nowrap' }} hover>
+          {sortedFilteredColumnNames.map((columnName) => {
+            const value = task[columnName];
+      
+            if (excludedColumns.includes(columnName) || !isColumnVisible(columnName))
+              return null;
 
           if (columnName === 'tags') {
             return (
@@ -615,11 +733,109 @@ const TaskGanttChartTable = ({ project, tasks, onTaskDateChange, dateMode }) => 
           }
         })}
       </TableRow>
-    ));
+      );
+    });
   };
 
   return (
-    <></>
+    <>
+      {/* Column Visibility Button */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<ViewColumnIcon />}
+          onClick={handleMenuOpen}
+          size="small"
+        >
+          {t('columnVisibility') || 'Column Visibility'}
+        </Button>
+      </Box>
+
+      {/* Column Visibility Menu */}
+      <Menu
+        anchorEl={anchorel}
+        open={Boolean(anchorel)}
+        onClose={handleMenuClose}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        TransitionProps={{
+          timeout: {
+            enter: 400,
+            exit: 300,
+          },
+        }}
+        slotProps={{
+          paper: {
+            sx: {
+              maxHeight: '400px',
+              overflow: 'auto',
+              '&.MuiPaper-root': {
+                transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease-in-out',
+              },
+              // Smooth scroll behavior for menu content
+              scrollBehavior: 'smooth',
+              // Custom scrollbar styling
+              '&::-webkit-scrollbar': {
+                width: '8px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#888',
+                borderRadius: '4px',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                background: '#555',
+              },
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={handleShowAll} dense>
+          <Typography variant="body2">{t('showAll') || 'Show All'}</Typography>
+        </MenuItem>
+        <MenuItem onClick={handleHideAll} dense>
+          <Typography variant="body2">{t('hideAll') || 'Hide All'}</Typography>
+        </MenuItem>
+        {sortedFilteredColumnNames.map((columnName) => (
+          <MenuItem key={columnName} dense>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isColumnVisible(columnName)}
+                  onChange={() => handleColumnToggle(columnName)}
+                  size="small"
+                />
+              }
+              label={<Typography variant="body2">{t(columnName)}</Typography>}
+            />
+          </MenuItem>
+        ))}
+      </Menu>
+
+      {/* Table Container */}
+      <TableContainer sx={{ m: 1, maxHeight: '600px', overflow: 'auto' }}>
+        <Table
+          size="small"
+          stickyHeader
+          sx={{
+            "& .MuiTableRow-root:hover": {
+              backgroundColor: theme.palette.action.hover
+            }
+          }}
+        >
+          <TableHead>{renderTableHeader()}</TableHead>
+          <TableBody>{renderTasks()}</TableBody>
+        </Table>
+      </TableContainer>
+    </>
   );
 };
 

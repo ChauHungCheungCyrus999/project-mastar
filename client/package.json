@@ -28,6 +28,7 @@
     "date-holidays": "^3.23.12",
     "dayjs": "^1.11.12",
     "draft-js-export-html": "^1.4.1",
+    "exceljs": "^4.4.0",
     "fullcalendar": "^6.1.15",
     "gantt-task-react": "^0.3.9",
     "i18next": "^23.12.2",

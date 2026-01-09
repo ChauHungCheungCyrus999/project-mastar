@@ -358,6 +358,8 @@
   "showTaskTable": "Show Task Table",
   "duration": "Duration",
   "manDay": "Man-day",
+  "totalDuration": "Total Duration",
+  "totalManDays": "Total Man-days",
 
   "all": "All",
   "taskName": "Task Name",
@@ -523,6 +525,7 @@
   "milestoneOverviewDesc": "Percentage of task completion in each milestone",
   "numOfMilestones": "Number of milestones",
   "withoutMilestone": "Without Milestone",
+  "noMilestone": "No Milestone",
 
   "milestoneStatusDistribution": "Milestone Status Distribution",
   "milestoneStatusDistributionDesc": "Overview of task progress across milestones",

@@ -29,6 +29,7 @@ export const handleSaveTask = async (updatedTask, tasks, setTasks) => {
     //handleCloseForm();
   } catch (error) {
     console.error('Error updating task:', error);
+    throw error;
   }
 };
 
@@ -53,12 +54,15 @@ export const handleDelete = (taskId, setOpenConfirmDeleteDialog, setTaskToDelete
   setTaskToDelete(taskId);
 };
 
-export const confirmDelete = async (taskToDelete, setTasks, setOpenConfirmDeleteDialog) => {
+export const confirmDelete = async (taskToDelete, setTasks, setOpenConfirmDeleteDialog, user) => {
   try {
-    await axios.delete(`${process.env.REACT_APP_SERVER_HOST}/api/task/${taskToDelete}`);
+    await axios.delete(`${process.env.REACT_APP_SERVER_HOST}/api/task/${taskToDelete}`, {
+      data: { deletedBy: user._id }
+    });
     setTasks((prevTasks) => prevTasks.filter((task) => task._id !== taskToDelete));
   } catch (error) {
     console.error('Error deleting task:', error);
+    throw error;
   }
   console.log("Deleted task: " + taskToDelete);
   setOpenConfirmDeleteDialog(false);

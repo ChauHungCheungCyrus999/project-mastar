@@ -222,11 +222,17 @@ const ProjectEditForm = ({ project, open, handleClose, handleSave }) => {
   };
 
   const handleTeamMembersChange = (event, value) => {
-    const selectedTeamMembers = value.map(item => ({
-      _id: item._id,
-      name: item.name,
-      role: item._id === user._id? "Project Manager" : "Team Member"
-    }));
+    const selectedTeamMembers = value.map(item => {
+      // Check if this member already exists in the editedProject.teamMembers
+      const existingMember = editedProject.teamMembers.find(member => member._id === item._id);
+      
+      return {
+        _id: item._id,
+        name: item.name,
+        // If the member already exists, keep their current role; otherwise set default
+        role: existingMember ? existingMember.role : (item._id === user._id ? "Project Manager" : "Team Member")
+      };
+    });
     setEditedProject(prevProject => ({
       ...prevProject,
       teamMembers: selectedTeamMembers
